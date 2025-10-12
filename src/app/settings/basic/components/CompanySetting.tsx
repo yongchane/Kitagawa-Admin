@@ -29,7 +29,7 @@ const formlist = [
     name: "phoneMobile",
     type: "text",
     placeholder: "'-' 없이 작성해주세요 (예: 01012345678)",
-    required: true,
+    required: false,
   },
   {
     title: "사무실 위치",
