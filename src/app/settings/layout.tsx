@@ -15,7 +15,9 @@ export default function SettingsLayout({
         <h1 className="text-[40px] text-[#004B73] font-bold">Admin Page</h1>
       </div>
       <NavMenu />
-      <main className="settings-content">{children}</main>
+      <main className="settings-content w-full h-full p-[48px]">
+        {children}
+      </main>
     </div>
   );
 }
