@@ -92,7 +92,7 @@ export default function ImageSelect() {
               return (
                 <div
                   key={slot.id}
-                  className="relative aspect-video bg-gray-300 rounded-lg overflow-hidden group cursor-pointer pretendard"
+                  className="relative aspect-video bg-[#737373] rounded-lg overflow-hidden group cursor-pointer pretendard"
                   onClick={() => {
                     if (!isUploaded && canAddMore) {
                       fileInputRefs.current[index]?.click();
