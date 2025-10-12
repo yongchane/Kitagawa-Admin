@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 const menu = [
   { name: "기본 정보 설정", href: "/settings/basic" },
@@ -14,18 +15,17 @@ export default function NavMenu() {
     <nav className="pretendard w-full  flex justify-center items-center gap-[50px] ">
       {menu.map((item) => (
         <ul className="flex flex-row" key={item.name}>
-          <li
-            className={`flex justify-center items-center w-[390px] h-[48px] border border-[#0089D1] rounded-[9999px] ${
-              isSelected(item.href) ? "bg-[#0089D1] text-white" : ""
-            }`}
-          >
-            <a
-              href={item.href}
-              className=" text-[16px] text-[#004B73] font-medium "
+          <Link href={item.href} className=" text-[16px]  font-medium ">
+            <li
+              className={`flex justify-center items-center w-[390px] h-[48px] border border-[#0089D1] rounded-[9999px] ${
+                isSelected(item.href)
+                  ? "bg-[#0089D1] text-white"
+                  : "text-[#0089D1]"
+              }`}
             >
               {item.name}
-            </a>
-          </li>
+            </li>
+          </Link>
         </ul>
       ))}
     </nav>
