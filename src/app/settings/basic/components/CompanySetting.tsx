@@ -114,68 +114,66 @@ export default function CompanySetting({ agree, setAgree }: Props) {
   };
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="flex flex-col md:grid md:grid-cols-2 gap-[24px] w-full h-[auto] mt-[36px]"
-    >
-      {formlist.map((item) => {
-        const name = item.name;
-        const value = values[name] || "";
-        const isFocused = focused === name;
-        const isFilled = value.trim().length > 0;
-        const showRequiredError =
-          !!item.required && (submitAttempted || touched[name]) && !isFilled;
-        const fieldError = errors[name];
-        const hasFieldError = !!fieldError || showRequiredError;
+    <div className="pretendard w-full mt-[10px]">
+      <div className="flex items-center  font-[600] gap-[20px]">
+        <h1 className="text-[#171717] text-[24px] ">기본 정보 설정</h1>
+        <h2 className="text-[#2B7FFF] text-[16px]">
+          {" "}
+          필수 항목을 입력해주세요
+        </h2>
+      </div>
 
-        return (
-          <div key={name} className="w-full">
-            <label className="pretendard text-[16px] font-[600] text-[#171717] mb-[8px] flex items-center">
-              {item.title}
-              {item.required ? (
-                <span className="pretendard text-[14px] font-[500] text-[#2B7FFF] ml-[4px]">
-                  (필수)
-                </span>
-              ) : (
-                <span className="pretendard text-[14px] font-[500] text-[#737373] ml-[4px]">
-                  (선택)
-                </span>
-              )}
-            </label>
+      <form
+        onSubmit={onSubmit}
+        className="flex flex-col md:grid md:grid-cols-2 gap-[24px] w-full h-[auto] mt-[36px]"
+      >
+        {formlist.map((item) => {
+          const name = item.name;
+          const value = values[name] || "";
+          const isFocused = focused === name;
+          const isFilled = value.trim().length > 0;
+          const showRequiredError =
+            !!item.required && (submitAttempted || touched[name]) && !isFilled;
+          const fieldError = errors[name];
+          const hasFieldError = !!fieldError || showRequiredError;
 
-            <input
-              name={name}
-              placeholder={item.placeholder}
-              value={value}
-              onChange={handleChange}
-              onFocus={() => handleFocus(name)}
-              onBlur={() => handleBlur(name)}
-              type={item.type}
-              required={!!item.required}
-              aria-required={!!item.required}
-              aria-invalid={hasFieldError}
-              inputMode={
-                name === "phone" || name === "phoneMobile"
-                  ? "numeric"
-                  : undefined
-              }
-              pattern={
-                name === "phone" || name === "phoneMobile"
-                  ? "[0-9]*"
-                  : undefined
-              }
-              className={`w-full h-[40px] rounded-[8px] p-[12px] focus:outline-none transition-colors ${
-                hasFieldError
-                  ? "border-[2px] border-[#FB2C36]"
-                  : isFocused
-                  ? "border-[2px] border-[#2B7FFF]"
-                  : "border-[1px] border-[#D4D4D4]"
-              }`}
-            />
-            {item.locationplaceholder && (
+          return (
+            <div key={name} className="w-full">
+              <label className="pretendard text-[16px] font-[600] text-[#171717] mb-[8px] flex items-center">
+                {item.title}
+                {item.required ? (
+                  <span className="pretendard text-[14px] font-[500] text-[#2B7FFF] ml-[4px]">
+                    (필수)
+                  </span>
+                ) : (
+                  <span className="pretendard text-[14px] font-[500] text-[#737373] ml-[4px]">
+                    (선택)
+                  </span>
+                )}
+              </label>
+
               <input
-                placeholder={item.locationplaceholder}
-                className={`mt-[8px] w-full h-[40px] rounded-[8px] p-[12px] focus:outline-none transition-colors ${
+                name={name}
+                placeholder={item.placeholder}
+                value={value}
+                onChange={handleChange}
+                onFocus={() => handleFocus(name)}
+                onBlur={() => handleBlur(name)}
+                type={item.type}
+                required={!!item.required}
+                aria-required={!!item.required}
+                aria-invalid={hasFieldError}
+                inputMode={
+                  name === "phone" || name === "phoneMobile"
+                    ? "numeric"
+                    : undefined
+                }
+                pattern={
+                  name === "phone" || name === "phoneMobile"
+                    ? "[0-9]*"
+                    : undefined
+                }
+                className={`w-full h-[40px] rounded-[8px] p-[12px] focus:outline-none transition-colors ${
                   hasFieldError
                     ? "border-[2px] border-[#FB2C36]"
                     : isFocused
@@ -183,50 +181,62 @@ export default function CompanySetting({ agree, setAgree }: Props) {
                     : "border-[1px] border-[#D4D4D4]"
                 }`}
               />
-            )}
-            {/* 도움말/에러 메시지 */}
-            {fieldError && (
-              <div className="mt-[6px] text-right pretendard text-[12px] text-[#FB2C36]">
-                {fieldError}
-              </div>
-            )}
-            {!fieldError && showRequiredError && (
-              <div className="mt-[6px] flex items-center justify-end gap-[6px] pretendard text-[12px] text-[#FB2C36]">
-                <span className="inline-block w-[6px] h-[6px] rounded-full bg-[#FB2C36]" />
-                <span>필수 항목을 채워 주세요</span>
-              </div>
-            )}
-          </div>
-        );
-      })}
-
-      <div className="col-span-2 mt-[80px] flex flex-col justify-center items-center">
-        {/* 안내 문구: 비활성 시 노출 */}
-        {!canSubmit && (
-          <div className="flex items-center mb-[8px]">
-            <img
-              src="/error.svg"
-              alt="error"
-              className="inline-block mr-[4px]"
-            />
-            <div className="pretendard font-[600] text-[14px] text-[#FB2C36]">
-              필수항목을 전부 작성해 주시기 바랍니다.
+              {item.locationplaceholder && (
+                <input
+                  placeholder={item.locationplaceholder}
+                  className={`mt-[8px] w-full h-[40px] rounded-[8px] p-[12px] focus:outline-none transition-colors ${
+                    hasFieldError
+                      ? "border-[2px] border-[#FB2C36]"
+                      : isFocused
+                      ? "border-[2px] border-[#2B7FFF]"
+                      : "border-[1px] border-[#D4D4D4]"
+                  }`}
+                />
+              )}
+              {/* 도움말/에러 메시지 */}
+              {fieldError && (
+                <div className="mt-[6px] text-right pretendard text-[12px] text-[#FB2C36]">
+                  {fieldError}
+                </div>
+              )}
+              {!fieldError && showRequiredError && (
+                <div className="mt-[6px] flex items-center justify-end gap-[6px] pretendard text-[12px] text-[#FB2C36]">
+                  <span className="inline-block w-[6px] h-[6px] rounded-full bg-[#FB2C36]" />
+                  <span>필수 항목을 채워 주세요</span>
+                </div>
+              )}
             </div>
-          </div>
-        )}
-        <button
-          type="submit"
-          disabled={!canSubmit}
-          onClick={() => setAgree(!agree)}
-          className={`${
-            canSubmit
-              ? "bg-[#0089D1] text-white hover:bg-[#007DBE] "
-              : "bg-[#EEE] text-[#D4D4D4] cursor-not-allowed"
-          } w-[392px]  px-[16px] py-[8px] rounded-[9999px] transition-colors`}
-        >
-          접수하기
-        </button>
-      </div>
-    </form>
+          );
+        })}
+
+        <div className="col-span-2 mt-[80px] flex flex-col justify-center items-center">
+          {/* 안내 문구: 비활성 시 노출 */}
+          {!canSubmit && (
+            <div className="flex items-center mb-[8px]">
+              <img
+                src="/error.svg"
+                alt="error"
+                className="inline-block mr-[4px]"
+              />
+              <div className="pretendard font-[600] text-[14px] text-[#FB2C36]">
+                필수항목을 전부 작성해 주시기 바랍니다.
+              </div>
+            </div>
+          )}
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            onClick={() => setAgree(!agree)}
+            className={`${
+              canSubmit
+                ? "bg-[#0089D1] text-white hover:bg-[#007DBE] "
+                : "bg-[#EEE] text-[#D4D4D4] cursor-not-allowed"
+            } w-[392px]  px-[16px] py-[8px] rounded-[9999px] transition-colors`}
+          >
+            접수하기
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
