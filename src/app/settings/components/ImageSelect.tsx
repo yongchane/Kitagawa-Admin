@@ -1,43 +1,10 @@
 "use client";
 
-// 이미지 업로드 api 연동 필요
-// 인터렉션 수정 필요
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import ImageSlot, {
-  UploadedImage,
-} from "@/app/settings/basic/components/ImageSlot";
+import ImageSlot from "@/app/settings/basic/components/ImageSlot";
 import ProductCard from "@/app/settings/basic/components/ProductCard";
-
-// 임시 제품 데이터 (나중에 API로 대체)
-const mockProducts = [
-  {
-    name: "Nc Rotary table",
-    content: "Compact & high accuracy Combination with chuck is available.",
-    img: "https://www.kitagawa.com/en/mtools/item/MK200R_right.jpg",
-  },
-  {
-    name: "Vise",
-    content: "Compact & high accuracy Combination with chuck is available.",
-    img: "https://www.kitagawa.com/en/mtools/item/itemCatImg06.jpg",
-  },
-  {
-    name: "Chuck",
-    content: "Compact & high accuracy Combination with chuck is available.",
-    img: "https://www.kitagawa.com/en/mtools/item/BR08_right.jpg",
-  },
-  {
-    name: "Cylinder",
-    content: "Compact & high accuracy Combination with chuck is available.",
-    img: "https://www.kitagawa.com/en/mtools/item/data/IMG/SR1677C.jpg",
-  },
-  {
-    name: "Work gripper",
-    content: "Compact & high accuracy Combination with chuck is available.",
-    img: "https://www.kitagawa.com/en/mtools/item/itemCatImg07.jpg",
-  },
-];
+import { homeSettingsAPI, MainImage } from "@/api/homeSettings";
 
 interface SelectedProduct {
   id: number;
@@ -50,7 +17,9 @@ export default function ImageSelect() {
   const isProductsPage = pathname?.includes("/settings/products");
 
   // 이미지 상태 (basic 페이지용)
-  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<MainImage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // 제품 상태 (products 페이지용)
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>(
@@ -59,23 +28,46 @@ export default function ImageSelect() {
 
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
 
+  // 초기 로딩 완료
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
+
   // 드래그 시작
   const handleDragStart = (index: number) => {
     setDraggedItem(index);
   };
 
   // 드롭 핸들러 (이미지용)
-  const handleImageDrop = (dropIndex: number) => {
+  const handleImageDrop = async (dropIndex: number) => {
     if (draggedItem === null) return;
 
-    setUploadedImages((prev) => {
-      const updated = [...prev];
-      const [draggedImage] = updated.splice(draggedItem, 1);
-      updated.splice(dropIndex, 0, draggedImage);
-      return updated;
-    });
-
+    // UI 먼저 업데이트
+    const updatedImages = [...uploadedImages];
+    const [draggedImage] = updatedImages.splice(draggedItem, 1);
+    updatedImages.splice(dropIndex, 0, draggedImage);
+    setUploadedImages(updatedImages);
     setDraggedItem(null);
+
+    // API 호출하여 순서 저장
+    try {
+      const imageUrls = updatedImages.map((img) => img.url);
+      const response = await homeSettingsAPI.updateImageOrder({ imageUrls });
+
+      if (!response.success) {
+        // 실패 시 원래 순서로 복구
+        setError(response.message || "이미지 순서 변경에 실패했습니다.");
+        loadMainImages();
+      }
+    } catch (err: any) {
+      console.error("Update order error:", err);
+      setError(
+        err.response?.data?.message ||
+          "이미지 순서 변경 중 오류가 발생했습니다."
+      );
+      // 실패 시 원래 순서로 복구
+      loadMainImages();
+    }
   };
 
   // 드롭 핸들러 (제품용)
@@ -96,8 +88,22 @@ export default function ImageSelect() {
   const currentItems = isBasicPage ? uploadedImages : selectedProducts;
   const handleDrop = isBasicPage ? handleImageDrop : handleProductDrop;
 
+  if (isLoading) {
+    return (
+      <div className="w-full flex justify-center items-center py-12">
+        <p className="text-gray-500">로딩 중...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex flex-col gap-4">
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-sm text-red-800">{error}</p>
+        </div>
+      )}
+
       <div className="w-full flex flex-row justify-between gap-[14%]">
         {/* 왼쪽: 이미지 슬롯 또는 제품 카드 영역 */}
         {isBasicPage ? (
@@ -108,7 +114,7 @@ export default function ImageSelect() {
           />
         ) : isProductsPage ? (
           <ProductCard
-            products={mockProducts}
+            products={[]}
             selectedProducts={selectedProducts}
             setSelectedProducts={setSelectedProducts}
             maxProducts={5}
@@ -125,40 +131,48 @@ export default function ImageSelect() {
 
           {currentItems.length !== 0 && (
             <div className="">
-              {currentItems.map((item, index) => (
-                <div
-                  key={item.id}
-                  draggable
-                  onDragStart={() => handleDragStart(index)}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={() => handleDrop(index)}
-                  className={`bg-[#F5F5F5] border border-gray-200 p-3 flex items-center gap-3 cursor-move hover:bg-gray-50 transition-colors ${
-                    draggedItem === index ? "opacity-50" : ""
-                  }`}
-                >
-                  {/* 드래그 핸들 아이콘 */}
-                  <div className="text-gray-400">
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="currentColor"
-                    >
-                      <path
-                        d="M2 4h12M2 8h12M2 12h12"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </div>
+              {currentItems.map((item, index) => {
+                // MainImage 타입 체크
+                const isMainImage = "url" in item;
+                const displayName = isMainImage
+                  ? item.altKo || item.alt
+                  : item.name;
 
-                  {/* 파일명 또는 제품명 */}
-                  <span className="text-sm text-gray-700 truncate">
-                    {"file" in item ? item.file.name : item.name}
-                  </span>
-                </div>
-              ))}
+                return (
+                  <div
+                    key={isMainImage ? item.url : item.id}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => handleDrop(index)}
+                    className={`bg-[#F5F5F5] border border-gray-200 p-3 flex items-center gap-3 cursor-move hover:bg-gray-50 transition-colors ${
+                      draggedItem === index ? "opacity-50" : ""
+                    }`}
+                  >
+                    {/* 드래그 핸들 아이콘 */}
+                    <div className="text-gray-400">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M2 4h12M2 8h12M2 12h12"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </div>
+
+                    {/* 파일명 또는 제품명 */}
+                    <span className="text-sm text-gray-700 truncate">
+                      {displayName}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
