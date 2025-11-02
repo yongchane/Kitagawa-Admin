@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import ImageSlot from "@/app/settings/basic/components/ImageSlot";
 import ProductCard from "@/app/settings/basic/components/ProductCard";
 import { homeSettingsAPI, MainImage } from "@/api/homeSettings";
+import { productsAPI, Category } from "@/api/products";
 
 interface SelectedProduct {
   id: number;
@@ -16,6 +17,11 @@ export default function ImageSelect() {
   const isBasicPage = pathname?.includes("/settings/basic");
   const isProductsPage = pathname?.includes("/settings/products");
 
+  // 디버깅용 로그
+  console.log("Current pathname:", pathname);
+  console.log("isBasicPage:", isBasicPage);
+  console.log("isProductsPage:", isProductsPage);
+
   // 이미지 상태 (basic 페이지용)
   const [uploadedImages, setUploadedImages] = useState<MainImage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,12 +32,41 @@ export default function ImageSelect() {
     []
   );
 
+  // API에서 가져온 제품 카테고리 데이터
+  const [categories, setCategories] = useState<Category[]>([]);
+
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
 
-  // 초기 로딩 완료
+  // 초기 로딩 및 데이터 fetch
   useEffect(() => {
-    setIsLoading(false);
-  }, []);
+    const fetchData = async () => {
+      setIsLoading(true);
+
+      // products 페이지인 경우 카테고리 데이터 로드
+      if (isProductsPage) {
+        try {
+          const response = await productsAPI.getLevel1Categories();
+          if (response.success && response.data) {
+            // catalogue를 제외한 카테고리만 필터링
+            const filteredCategories = response.data.filter(
+              (category) => category.slug !== 'catalogue'
+            );
+            setCategories(filteredCategories);
+          }
+        } catch (err: any) {
+          console.error("Failed to fetch categories:", err);
+          setError(
+            err.response?.data?.message ||
+              "카테고리 데이터를 불러오는데 실패했습니다."
+          );
+        }
+      }
+
+      setIsLoading(false);
+    };
+
+    fetchData();
+  }, [isProductsPage]);
 
   // 드래그 시작
   const handleDragStart = (index: number) => {
@@ -55,9 +90,8 @@ export default function ImageSelect() {
       const response = await homeSettingsAPI.updateImageOrder({ imageUrls });
 
       if (!response.success) {
-        // 실패 시 원래 순서로 복구
+        // 실패 시 에러 표시
         setError(response.message || "이미지 순서 변경에 실패했습니다.");
-        loadMainImages();
       }
     } catch (err: any) {
       console.error("Update order error:", err);
@@ -65,8 +99,6 @@ export default function ImageSelect() {
         err.response?.data?.message ||
           "이미지 순서 변경 중 오류가 발생했습니다."
       );
-      // 실패 시 원래 순서로 복구
-      loadMainImages();
     }
   };
 
@@ -106,7 +138,7 @@ export default function ImageSelect() {
 
       <div className="w-full flex flex-row justify-between gap-[14%]">
         {/* 왼쪽: 이미지 슬롯 또는 제품 카드 영역 */}
-        {isBasicPage ? (
+        {isBasicPage && !isProductsPage ? (
           <ImageSlot
             uploadedImages={uploadedImages}
             setUploadedImages={setUploadedImages}
@@ -114,7 +146,12 @@ export default function ImageSelect() {
           />
         ) : isProductsPage ? (
           <ProductCard
-            products={[]}
+            products={categories.map((cat) => ({
+              name: cat.name,
+              content: cat.content,
+              img: cat.imageUrl,
+              slug: cat.slug,
+            }))}
             selectedProducts={selectedProducts}
             setSelectedProducts={setSelectedProducts}
             maxProducts={5}

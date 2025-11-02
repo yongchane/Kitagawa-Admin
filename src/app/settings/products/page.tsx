@@ -1,5 +1,7 @@
 import AdminSettings from "../components/AdminSettings";
 
+import ImageSelect from "../components/ImageSelect";
+
 export default function ProductsPage() {
   return (
     <div>
