@@ -92,6 +92,10 @@ export interface CategoryUpdateRequest {
   youtubeUrl?: string;
 }
 
+export interface ProductOrderUpdateRequest {
+  order: number;
+}
+
 export interface ApiResponse<T = any> {
   success: boolean;
   code: number;
@@ -140,6 +144,30 @@ export const productsAPI = {
     const response = await axiosInstance.patch<ApiResponse>(
       `/api/category-admin/${slug}`,
       categoryData
+    );
+    return response.data;
+  },
+
+  // 제품 순서 변경
+  updateProductOrder: async (
+    slug: string,
+    order: number
+  ): Promise<ApiResponse> => {
+    const response = await axiosInstance.patch<ApiResponse>(
+      `/api/product-admin/${slug}/order`,
+      { order }
+    );
+    return response.data;
+  },
+
+  // 카테고리 순서 변경
+  updateCategoryOrder: async (
+    slug: string,
+    order: number
+  ): Promise<ApiResponse> => {
+    const response = await axiosInstance.patch<ApiResponse>(
+      `/api/category-admin/${slug}/order`,
+      { order }
     );
     return response.data;
   },

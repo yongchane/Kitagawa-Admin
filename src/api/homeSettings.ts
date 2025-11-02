@@ -28,6 +28,14 @@ export interface ApiResponse<T = any> {
 
 // Home Settings API
 export const homeSettingsAPI = {
+  // 메인 이미지 목록 조회
+  getMainImages: async (): Promise<ApiResponse<MainImage[]>> => {
+    const response = await axiosInstance.get<ApiResponse<MainImage[]>>(
+      '/api/home-settings-admin/main-images'
+    );
+    return response.data;
+  },
+
   // 메인 이미지 업로드 (파일 직접 업로드)
   uploadMainImage: async (
     file: File,

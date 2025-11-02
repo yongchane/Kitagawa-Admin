@@ -4,9 +4,9 @@ import Link from "next/link";
 
 interface ProductCardProps {
   products: { name: string; content?: string; img: string; slug?: string }[];
-  selectedProducts: { id: number; name: string }[];
+  selectedProducts: { id: number; name: string; slug: string }[];
   setSelectedProducts: React.Dispatch<
-    React.SetStateAction<{ id: number; name: string }[]>
+    React.SetStateAction<{ id: number; name: string; slug: string }[]>
   >;
   maxProducts?: number;
 }
@@ -17,7 +17,7 @@ export default function ProductCard({
   setSelectedProducts,
   maxProducts = 5,
 }: ProductCardProps) {
-  const handleProductClick = (productName: string) => {
+  const handleProductClick = (productName: string, productSlug: string) => {
     // 이미 선택된 제품인지 확인
     const isSelected = selectedProducts.some(
       (product) => product.name === productName
@@ -34,7 +34,7 @@ export default function ProductCard({
         // 선택 추가
         setSelectedProducts((prev) => [
           ...prev,
-          { id: Date.now(), name: productName },
+          { id: Date.now(), name: productName, slug: productSlug },
         ]);
       }
     }
@@ -52,7 +52,7 @@ export default function ProductCard({
           return (
             <div
               key={product.name}
-              onClick={() => handleProductClick(product.name)}
+              onClick={() => handleProductClick(product.name, product.slug || product.name)}
               className={`flex flex-col w-full border-[1px] rounded-[12px] p-[20px] cursor-pointer duration-300
                 ${
                   isSelected
