@@ -48,16 +48,38 @@ async function handleRequest(
   method: string
 ) {
   try {
-    const path = pathSegments.join('/');
-    const url = `${BACKEND_URL}/${path}`;
+    // pathSegments는 Next.js가 자동으로 디코딩한 상태
+    // 각 segment를 다시 인코딩하여 경로 구성
+    const encodedSegments = pathSegments.map((segment) => {
+      // URL이 포함된 segment는 다시 인코딩 필요
+      if (segment.includes('://') || segment.includes('/')) {
+        return encodeURIComponent(segment);
+      }
+      return segment;
+    });
 
-    console.log(`[Proxy] ${method} ${url}`);
+    const path = encodedSegments.join('/');
+
+    // query parameter 가져오기
+    const searchParams = request.nextUrl.searchParams;
+    const queryString = searchParams.toString();
+
+    // URL 구성 (query parameter 포함)
+    const url = queryString
+      ? `${BACKEND_URL}/${path}?${queryString}`
+      : `${BACKEND_URL}/${path}`;
+
+    console.log(`[Proxy] ${method} request`);
+    console.log(`[Proxy] Path segments (original):`, pathSegments);
+    console.log(`[Proxy] Path segments (encoded):`, encodedSegments);
+    console.log(`[Proxy] Query params:`, queryString);
+    console.log(`[Proxy] Full URL: ${url}`);
 
     // 요청 바디 가져오기
     let body = null;
     let contentType = request.headers.get('content-type') || 'application/json';
 
-    if (method !== 'GET' && method !== 'DELETE') {
+    if (method !== 'GET') {
       // multipart/form-data인 경우 FormData 그대로 전달
       if (contentType.includes('multipart/form-data')) {
         try {
@@ -66,7 +88,7 @@ async function handleRequest(
           console.error('[Proxy] FormData parse error:', e);
         }
       } else {
-        // JSON인 경우
+        // JSON인 경우 (DELETE도 body를 가질 수 있음)
         try {
           body = await request.json();
         } catch {

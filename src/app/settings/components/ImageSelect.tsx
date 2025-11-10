@@ -19,6 +19,7 @@ export default function ImageSelect() {
     handleDragStart,
     handleImageOrderUpdate,
     handleCategoryOrderUpdate,
+    handleProductDelete,
   } = useImageSelect();
 
   // 페이지별 설정
@@ -53,6 +54,7 @@ export default function ImageSelect() {
               selectedProducts={selectedProducts}
               setSelectedProducts={setSelectedProducts}
               maxProducts={5}
+              onDelete={handleProductDelete}
             />
           ),
           dragHint: "제품 순서를 드래그 해서 설정해보세요",

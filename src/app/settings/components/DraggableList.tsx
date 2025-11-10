@@ -28,7 +28,7 @@ export default function DraggableList({
   // 아이템 이름 추출
   const getDisplayName = (item: DraggableItem): string => {
     if ("url" in item) {
-      return item.altKo || item.alt;
+      return item.altKo || item.alt || "이미지";
     }
     return item.name;
   };

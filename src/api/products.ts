@@ -1,4 +1,9 @@
 import axiosInstance from './axios';
+import {
+  revalidateProductPage,
+  revalidateCategoryPage,
+  extractCategorySlug,
+} from '@/utils/revalidation';
 
 // 타입 정의
 export interface Category {
@@ -121,6 +126,13 @@ export const productsAPI = {
       '/api/product-admin',
       productData
     );
+
+    // 제품 생성 성공 시 Kitagawa 사이트 카테고리 페이지 재생성
+    if (response.data.success && response.data.data) {
+      const categorySlug = extractCategorySlug(response.data.data.category);
+      await revalidateCategoryPage(categorySlug);
+    }
+
     return response.data;
   },
 
@@ -133,6 +145,13 @@ export const productsAPI = {
       `/api/product-admin/${slug}`,
       productData
     );
+
+    // 제품 수정 성공 시 Kitagawa 사이트 페이지 재생성
+    if (response.data.success && response.data.data) {
+      const categorySlug = extractCategorySlug(response.data.data.category);
+      await revalidateProductPage(categorySlug, slug);
+    }
+
     return response.data;
   },
 
@@ -169,6 +188,35 @@ export const productsAPI = {
       `/api/category-admin/${slug}/order`,
       { order }
     );
+    return response.data;
+  },
+
+  // 제품 삭제
+  deleteProduct: async (slug: string): Promise<ApiResponse> => {
+    const response = await axiosInstance.delete<ApiResponse>(
+      `/api/product-admin/${slug}`
+    );
+
+    // 제품 삭제 성공 시 Kitagawa 사이트 카테고리 페이지 재생성
+    if (response.data.success) {
+      // 삭제된 제품의 카테고리 정보를 알 수 없으므로 전체 재생성은 하지 않음
+      console.log('[Product Delete] 제품 삭제 완료. 카테고리 페이지는 자동 갱신됩니다.');
+    }
+
+    return response.data;
+  },
+
+  // 카테고리 삭제
+  deleteCategory: async (slug: string): Promise<ApiResponse> => {
+    const response = await axiosInstance.delete<ApiResponse>(
+      `/api/category-admin/${slug}`
+    );
+
+    // 카테고리 삭제 성공 시 Kitagawa 사이트 홈 페이지 재생성
+    if (response.data.success) {
+      await revalidateCategoryPage(slug);
+    }
+
     return response.data;
   },
 };

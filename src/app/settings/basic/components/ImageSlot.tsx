@@ -32,11 +32,14 @@ export default function ImageSlot({
       setIsUploading(true);
       setUploadError(null);
 
-      // 파일을 직접 API에 업로드
+      // 파일명에서 확장자를 제거하여 alt 텍스트로 사용
+      const fileName = file.name.replace(/\.[^/.]+$/, "");
+
+      // 2단계 업로드: 파일 업로드 후 메인 이미지 정보 저장
       const response = await homeSettingsAPI.uploadMainImage(
         file,
-        file.name,
-        file.name
+        fileName, // alt (영문)
+        fileName // altKo (한글 - 필요시 사용자에게 입력받도록 개선 가능)
       );
 
       if (response.success && response.data) {
@@ -79,11 +82,12 @@ export default function ImageSlot({
       // 1. 기존 이미지 삭제
       await homeSettingsAPI.deleteMainImage(oldImage.url);
 
-      // 2. 새 이미지 파일 직접 업로드
+      // 2. 새 이미지 파일 업로드
+      const fileName = file.name.replace(/\.[^/.]+$/, "");
       const response = await homeSettingsAPI.uploadMainImage(
         file,
-        file.name,
-        file.name
+        fileName,
+        fileName
       );
 
       if (response.success && response.data) {
@@ -114,7 +118,9 @@ export default function ImageSlot({
       const response = await homeSettingsAPI.deleteMainImage(image.url);
 
       if (response.success) {
-        setUploadedImages((prev) => prev.filter((img) => img.url !== image.url));
+        setUploadedImages((prev) =>
+          prev.filter((img) => img.url !== image.url)
+        );
         onImageDelete?.(image.url);
       } else {
         setUploadError(response.message || "이미지 삭제에 실패했습니다.");
@@ -158,7 +164,7 @@ export default function ImageSlot({
                 <>
                   <img
                     src={uploadedImage.url}
-                    alt={uploadedImage.altKo || uploadedImage.alt}
+                    alt={uploadedImage.altKo || uploadedImage.alt || ""}
                     className="w-full h-full object-cover"
                   />
                   {/* Hover 시 오버레이 */}
@@ -231,7 +237,8 @@ export default function ImageSlot({
                 // 이미지가 없는 경우 (빈 슬롯)
                 <div
                   className={`w-full h-full flex flex-col items-center justify-center ${
-                    (!canAddMore || isUploading) && "opacity-50 cursor-not-allowed"
+                    (!canAddMore || isUploading) &&
+                    "opacity-50 cursor-not-allowed"
                   }`}
                 >
                   <div className="w-16 h-16 rounded-full bg-gray-400 group-hover:bg-gray-500 transition-colors flex flex-col items-center justify-center">

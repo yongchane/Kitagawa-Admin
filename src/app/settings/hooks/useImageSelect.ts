@@ -27,7 +27,9 @@ export const useImageSelect = () => {
 
   // 상태 관리
   const [uploadedImages, setUploadedImages] = useState<MainImage[]>([]);
-  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>(
+    []
+  );
   const [categories, setCategories] = useState<Category[]>([]);
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,14 +41,20 @@ export const useImageSelect = () => {
       const response = await homeSettingsAPI.getMainImages();
 
       if (!response.success || !response.data) {
-        throw new Error(response.message || "이미지 데이터를 불러올 수 없습니다.");
+        throw new Error(
+          response.message || "이미지 데이터를 불러올 수 없습니다."
+        );
       }
 
-      setUploadedImages(response.data);
+      // order 값으로 정렬
+      const sortedImages = response.data.sort((a, b) => a.order - b.order);
+      setUploadedImages(sortedImages);
       setError(null);
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "이미지 데이터를 불러오는데 실패했습니다.";
+        err instanceof Error
+          ? err.message
+          : "이미지 데이터를 불러오는데 실패했습니다.";
 
       console.error("Failed to fetch images:", err);
       setError(errorMessage);
@@ -59,7 +67,9 @@ export const useImageSelect = () => {
       const response = await productsAPI.getLevel1Categories();
 
       if (!response.success || !response.data) {
-        throw new Error(response.message || "카테고리 데이터를 불러올 수 없습니다.");
+        throw new Error(
+          response.message || "카테고리 데이터를 불러올 수 없습니다."
+        );
       }
 
       const filteredCategories = response.data.filter(
@@ -68,17 +78,21 @@ export const useImageSelect = () => {
 
       setCategories(filteredCategories);
 
-      const initialSelectedProducts = filteredCategories.map((category, index) => ({
-        id: index,
-        name: category.name,
-        slug: category.slug,
-      }));
+      const initialSelectedProducts = filteredCategories.map(
+        (category, index) => ({
+          id: index,
+          name: category.name,
+          slug: category.slug,
+        })
+      );
       setSelectedProducts(initialSelectedProducts);
 
       setError(null);
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "카테고리 데이터를 불러오는데 실패했습니다.";
+        err instanceof Error
+          ? err.message
+          : "카테고리 데이터를 불러오는데 실패했습니다.";
 
       console.error("Failed to fetch categories:", err);
       setError(errorMessage);
@@ -123,7 +137,9 @@ export const useImageSelect = () => {
         const response = await homeSettingsAPI.updateImageOrder({ imageUrls });
 
         if (!response.success) {
-          throw new Error(response.message || "이미지 순서 변경에 실패했습니다.");
+          throw new Error(
+            response.message || "이미지 순서 변경에 실패했습니다."
+          );
         }
 
         setError(null);
@@ -132,7 +148,9 @@ export const useImageSelect = () => {
         await loadMainImages();
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : "이미지 순서 변경 중 오류가 발생했습니다.";
+          err instanceof Error
+            ? err.message
+            : "이미지 순서 변경 중 오류가 발생했습니다.";
 
         console.error("Update image order error:", err);
         setError(errorMessage);
@@ -172,13 +190,45 @@ export const useImageSelect = () => {
         await loadCategories();
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : "카테고리 순서 변경 중 오류가 발생했습니다.";
+          err instanceof Error
+            ? err.message
+            : "카테고리 순서 변경 중 오류가 발생했습니다.";
 
         console.error("Update category order error:", err);
         setError(errorMessage);
       }
     },
     [draggedItem, selectedProducts, loadCategories]
+  );
+
+  // 카테고리 삭제 (products 페이지에서 사용)
+  const handleProductDelete = useCallback(
+    async (slug: string) => {
+      try {
+        console.log(`Deleting category with slug: ${slug}`);
+
+        const response = await productsAPI.deleteCategory(slug);
+
+        if (!response.success) {
+          throw new Error(response.message || "카테고리 삭제에 실패했습니다.");
+        }
+
+        setError(null);
+
+        // 삭제 성공 후 최신 데이터 다시 로드
+        await loadCategories();
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "카테고리 삭제 중 오류가 발생했습니다.";
+
+        console.error("Delete category error:", err);
+        setError(errorMessage);
+        throw err; // 에러를 다시 throw하여 호출자에게 전달
+      }
+    },
+    [loadCategories]
   );
 
   return {
@@ -194,5 +244,6 @@ export const useImageSelect = () => {
     handleDragStart,
     handleImageOrderUpdate,
     handleCategoryOrderUpdate,
+    handleProductDelete,
   };
 };

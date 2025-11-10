@@ -9,6 +9,7 @@ interface ProductCardProps {
     React.SetStateAction<{ id: number; name: string; slug: string }[]>
   >;
   maxProducts?: number;
+  onDelete?: (slug: string) => Promise<void>;
 }
 
 export default function ProductCard({
@@ -16,6 +17,7 @@ export default function ProductCard({
   selectedProducts,
   setSelectedProducts,
   maxProducts = 5,
+  onDelete,
 }: ProductCardProps) {
   const handleProductClick = (productName: string, productSlug: string) => {
     // 이미 선택된 제품인지 확인
@@ -37,6 +39,22 @@ export default function ProductCard({
           { id: Date.now(), name: productName, slug: productSlug },
         ]);
       }
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, slug: string) => {
+    e.stopPropagation();
+
+    if (!onDelete) return;
+
+    const confirmed = window.confirm("정말 이 제품을 삭제하시겠습니까?");
+    if (!confirmed) return;
+
+    try {
+      await onDelete(slug);
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("제품 삭제에 실패했습니다.");
     }
   };
 
@@ -83,31 +101,58 @@ export default function ProductCard({
                 />
               </div>
 
-              {/* 하단: 제품 수정하기 링크 */}
-              <Link
-                href={`/settings/products/setting?slug=${encodeURIComponent(
-                  product.slug || product.name
-                )}`}
-                onClick={(e) => e.stopPropagation()}
-                className="self-end text-[#0089D1] text-[14px] font-[600] pretendard hover:underline flex items-center gap-[4px]"
-              >
-                제품 수정하기
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
+              {/* 하단: 제품 수정하기 링크 및 삭제 버튼 */}
+              <div className="flex items-center justify-between">
+                <Link
+                  href={`/settings/products/setting?slug=${encodeURIComponent(
+                    product.slug || product.name
+                  )}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-[#0089D1] text-[14px] font-[600] pretendard hover:underline flex items-center gap-[4px]"
                 >
-                  <path
-                    d="M6 12L10 8L6 4"
-                    stroke="#0089D1"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Link>
+                  제품 수정하기
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M6 12L10 8L6 4"
+                      stroke="#0089D1"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </Link>
+
+                {/* 삭제 버튼 */}
+                {onDelete && product.slug && (
+                  <button
+                    onClick={(e) => handleDelete(e, product.slug!)}
+                    className="text-[#DC2626] text-[14px] font-[600] pretendard hover:underline flex items-center gap-[4px]"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M2 4h12M5.333 4V2.667a1.333 1.333 0 0 1 1.334-1.334h2.666a1.333 1.333 0 0 1 1.334 1.334V4m2 0v9.333a1.333 1.333 0 0 1-1.334 1.334H4.667a1.333 1.333 0 0 1-1.334-1.334V4h9.334Z"
+                        stroke="#DC2626"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    삭제
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
