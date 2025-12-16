@@ -134,17 +134,6 @@ export default function SingleImageSlot({
           disabled={isUploading}
         />
       </div>
-
-      <input
-        type="text"
-        value={currentImageUrl}
-        onChange={(e) => {
-          setCurrentImageUrl(e.target.value);
-          onImageUpdate(e.target.value);
-        }}
-        className="w-full px-[16px] py-[12px] border border-[#D4D4D4] rounded-[8px] text-[14px] focus:outline-none focus:border-[#0089D1]"
-        placeholder="이미지 URL을 입력하세요"
-      />
     </div>
   );
 }

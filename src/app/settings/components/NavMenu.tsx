@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import path from "path";
 
 const menu = [
   { name: "기본 정보 설정", href: "/settings/basic" },
@@ -18,10 +17,12 @@ export default function NavMenu() {
     // 정확히 일치하거나, 하위 경로인 경우
     return pathname === href || pathname.startsWith(href + "/");
   };
-
+  const unActive =
+    pathname !== "/settings/products/request" &&
+    !pathname.startsWith("/settings/products/edit");
   return (
     <>
-      {pathname !== "/settings/products/request" && (
+      {unActive && (
         <>
           <div className="w-full px-[48px] pt-[48px] pb-[16px]">
             <h1 className="text-[40px] text-[#004B73] font-bold">Admin Page</h1>

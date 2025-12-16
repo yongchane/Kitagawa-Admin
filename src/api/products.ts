@@ -226,6 +226,55 @@ export interface Level3GetResponse {
   };
 }
 
+export interface Level3ReorderItem {
+  slug: string;
+  order: number;
+}
+
+export interface ProductDetail {
+  _id: string;
+  slug: string;
+  productName: string;
+  productTitle?: string;
+  category: {
+    mainCategory: string;
+    subCategory: string;
+    series: string;
+  };
+  sourceUrl?: string;
+  mainImageUrl: string;
+  content?: string;
+  contentDetail?: string;
+  description: string;
+  specificationHtml?: string;
+  downloads?: any[];
+  specificationFiles?: any[];
+  tags?: string[];
+  isActive: boolean;
+  isFeatured?: boolean;
+  viewCount: number;
+  orderInLevel1: number;
+  orderInLevel2: number;
+  youtubeUrl?: string[];
+}
+
+export interface ProductDetailResponse {
+  success: boolean;
+  code: number;
+  message: string;
+  data: ProductDetail;
+}
+
+export interface Level3ProductUpdateRequest {
+  productTitle?: string;
+  productName?: string;
+  mainImageUrl?: string;
+  description?: string;
+  content?: string;
+  contentDetail?: string;
+  isActive?: boolean;
+}
+
 export interface ApiResponse<T = any> {
   success: boolean;
   code: number;
@@ -413,6 +462,38 @@ export const productsAPI = {
       {
         params: { page, limit },
       }
+    );
+    return response.data;
+  },
+
+  // Level 3 제품 순서 변경
+  reorderLevel3Products: async (
+    subCategorySlug: string,
+    items: Level3ReorderItem[]
+  ): Promise<ApiResponse> => {
+    const response = await axiosInstance.patch<ApiResponse>(
+      `/api/product-admin/level3/${subCategorySlug}/reorder`,
+      { items }
+    );
+    return response.data;
+  },
+
+  // 제품 상세 조회 (slug로)
+  getProductBySlug: async (slug: string): Promise<ProductDetailResponse> => {
+    const response = await axiosInstance.get<ProductDetailResponse>(
+      `/api/product-admin/products/${slug}`
+    );
+    return response.data;
+  },
+
+  // Level 3 제품 정보 수정
+  updateLevel3Product: async (
+    slug: string,
+    data: Level3ProductUpdateRequest
+  ): Promise<ApiResponse> => {
+    const response = await axiosInstance.patch<ApiResponse>(
+      `/api/product-admin/level3/${slug}`,
+      data
     );
     return response.data;
   },

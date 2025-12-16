@@ -1,257 +1,233 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import {
-  productsAPI,
-  Level2Category,
-  CategoryChild,
-} from "@/api/products";
-import CategoryTabSelector from "../components/CategoryTabSelector";
-import ChildProductGrid from "../components/ChildProductGrid";
-import ProductDetailForm, {
-  ProductFormData,
-} from "../components/ProductDetailForm";
+import { productsAPI, ProductDetail } from "@/api/products";
+import SingleImageSlot from "../setting/components/SingleImageSlot";
+import Switch from "../../components/Switch";
+import FormInput from "../components/FormInput";
+import FormTextarea from "../components/FormTextarea";
+import SubmitButton from "../components/SubmitButton";
+import AlertMessage from "../components/AlertMessage";
+import PageHeader from "../components/PageHeader";
 
 function ProductEditContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const slug = searchParams?.get("slug"); // 대분류 slug (예: nc-rotary-table)
+  const slug = searchParams?.get("slug");
 
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Level2Category[]>([]);
-  const [selectedCategory, setSelectedCategory] =
-    useState<Level2Category | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<CategoryChild | null>(
-    null
-  );
-  const [showDetailForm, setShowDetailForm] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Level 2 카테고리 데이터 로드
+  // 초기 로드된 제품명을 저장 (페이지 타이틀용)
+  const [initialProductTitle, setInitialProductTitle] = useState("");
+
+  const [formData, setFormData] = useState({
+    productTitle: "",
+    mainImageUrl: "",
+    description: "",
+    isActive: true,
+    // 자동으로 전달할 필드들
+    productName: "",
+    content: "",
+    contentDetail: "",
+  });
+
+  // 제출 버튼 활성화 조건: 이미지, 제품명, 설명이 모두 있어야 함
+  const isSubmitDisabled = useMemo(() => {
+    return (
+      !formData.mainImageUrl.trim() ||
+      !formData.productTitle.trim() ||
+      !formData.description.trim()
+    );
+  }, [formData.mainImageUrl, formData.productTitle, formData.description]);
+
+  // 제품 데이터 로드
   useEffect(() => {
-    const loadCategories = async () => {
+    const loadProductData = async () => {
       if (!slug) {
-        setError("제품 slug가 필요합니다.");
-        setLoading(false);
+        setError("제품 slug가 없습니다.");
+        setIsLoading(false);
         return;
       }
 
+      setIsLoading(true);
+      setError(null);
+
       try {
-        setLoading(true);
-        const response = await productsAPI.getLevel2CategoriesBySlug(slug);
+        const response = await productsAPI.getProductBySlug(slug);
 
         if (response.success && response.data) {
-          setCategories(response.data);
-          // 첫 번째 카테고리 자동 선택
-          if (response.data.length > 0) {
-            setSelectedCategory(response.data[0]);
-          }
+          const product = response.data;
+          const productTitle = product.productTitle || product.productName;
+
+          setFormData({
+            productTitle,
+            mainImageUrl: product.mainImageUrl,
+            description: product.description,
+            isActive: product.isActive,
+            productName: product.productName,
+            content: product.content || "",
+            contentDetail: product.contentDetail || "",
+          });
+
+          // 초기 제품명 저장 (페이지 타이틀용)
+          setInitialProductTitle(productTitle);
         } else {
-          setError(response.message || "카테고리를 불러올 수 없습니다.");
+          setError("제품 데이터를 불러올 수 없습니다.");
         }
       } catch (err: any) {
-        console.error("Failed to load categories:", err);
-        setError("카테고리를 불러오는 중 오류가 발생했습니다.");
+        console.error("Failed to load product data:", err);
+        setError(
+          err.response?.data?.message ||
+            "제품 데이터를 불러오는데 실패했습니다."
+        );
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
-    loadCategories();
+    loadProductData();
   }, [slug]);
 
-  // 제품 선택 핸들러
-  const handleSelectProduct = (product: CategoryChild) => {
-    setSelectedProduct(product);
-    setShowDetailForm(true);
-  };
+  const handleSubmit = async () => {
+    setError(null);
+    setSuccessMessage(null);
 
-  // 제품 추가 핸들러
-  const handleAddNewProduct = () => {
-    setSelectedProduct(null);
-    setShowDetailForm(true);
-  };
-
-  // 제품 저장 핸들러
-  const handleSubmitProduct = async (data: ProductFormData) => {
     try {
-      if (selectedProduct) {
-        // 기존 제품 수정
-        const response = await productsAPI.updateProduct(
-          selectedProduct.slug,
-          {
-            productName: data.productName,
-            category: {
-              mainCategory: data.mainCategory,
-              subCategory: data.subCategory,
-              series: "",
-            },
-            sourceUrl: data.sourceUrl,
-            mainImageUrl: data.sourceUrl,
-            pdfUrl: data.pdfUrl,
-          }
-        );
+      if (!slug) {
+        setError("제품 slug가 없습니다.");
+        return;
+      }
 
-        if (response.success) {
-          alert("제품이 수정되었습니다.");
-          setShowDetailForm(false);
-          // 데이터 새로고침
-          window.location.reload();
-        } else {
-          alert(response.message || "제품 수정에 실패했습니다.");
+      // Level 3 제품 정보 수정
+      const requestData = {
+        productTitle: formData.productTitle,
+        productName: formData.productName,
+        mainImageUrl: formData.mainImageUrl,
+        description: formData.description,
+        content: formData.content,
+        contentDetail: formData.contentDetail,
+        isActive: formData.isActive,
+      };
+
+      const response = await productsAPI.updateLevel3Product(slug, requestData);
+
+      if (response.success) {
+        setSuccessMessage("제품이 성공적으로 수정되었습니다.");
+
+        // 데이터 새로고침
+        const refreshResponse = await productsAPI.getProductBySlug(slug);
+        if (refreshResponse.success && refreshResponse.data) {
+          const product = refreshResponse.data;
+          const productTitle = product.productTitle || product.productName;
+
+          setFormData({
+            productTitle,
+            mainImageUrl: product.mainImageUrl,
+            description: product.description,
+            isActive: product.isActive,
+            productName: product.productName,
+            content: product.content || "",
+            contentDetail: product.contentDetail || "",
+          });
+
+          // 페이지 타이틀 업데이트
+          setInitialProductTitle(productTitle);
         }
       } else {
-        // 새 제품 생성
-        const response = await productsAPI.createProduct({
-          slug: data.slug || `${data.mainCategory}-${Date.now()}`,
-          productName: data.productName,
-          productNameKo: data.productName,
-          category: {
-            mainCategory: data.mainCategory,
-            subCategory: data.subCategory,
-            series: "",
-          },
-          sourceUrl: data.sourceUrl,
-          mainImageUrl: data.sourceUrl,
-          pdfUrl: data.pdfUrl,
-          isActive: true,
-        });
-
-        if (response.success) {
-          alert("제품이 추가되었습니다.");
-          setShowDetailForm(false);
-          // 데이터 새로고침
-          window.location.reload();
-        } else {
-          alert(response.message || "제품 추가에 실패했습니다.");
-        }
+        setError(response.message || "제품 수정에 실패했습니다.");
       }
-    } catch (error: any) {
-      console.error("Product save error:", error);
-      alert("저장 중 오류가 발생했습니다.");
+    } catch (err: any) {
+      console.error("Submit error:", err);
+      setError(
+        err.response?.data?.message || "요청 처리 중 오류가 발생했습니다."
+      );
     }
   };
 
-  // 취소/삭제 핸들러
-  const handleCancel = () => {
-    if (selectedProduct) {
-      if (confirm("정말 이 제품을 삭제하시겠습니까?")) {
-        // TODO: 제품 삭제 API 호출
-        productsAPI
-          .deleteProduct(selectedProduct.slug)
-          .then(() => {
-            alert("제품이 삭제되었습니다.");
-            setShowDetailForm(false);
-            window.location.reload();
-          })
-          .catch(() => {
-            alert("제품 삭제에 실패했습니다.");
-          });
-      }
-    } else {
-      setShowDetailForm(false);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="container mx-auto p-8">
-        <div className="text-center py-12">
-          <p className="text-gray-500">로딩 중...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto p-8">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">{error}</p>
-        </div>
-        <Link
-          href="/settings/products"
-          className="inline-block mt-4 text-blue-600 hover:underline"
-        >
-          ← 뒤로 가기
-        </Link>
+      <div className="w-full h-screen flex items-center justify-center">
+        <p className="text-gray-500">로딩 중...</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-8 max-w-7xl">
-      {/* 헤더 */}
-      <div className="mb-6">
-        <Link
-          href="/settings/products"
-          className="inline-flex items-center text-blue-600 hover:underline mb-4"
-        >
-          ← 제품 설정으로 돌아가기
-        </Link>
-        <h1 className="text-2xl font-bold">
-          {selectedCategory?.parentLevelCategory || "제품"} 설정
-        </h1>
-        <p className="text-gray-600 mt-1">
-          하위 제품을 설정하고 관리합니다.
-        </p>
-      </div>
+    <div className="w-full flex flex-col gap-[40px] pretendard p-[40px]">
+      {error && <AlertMessage type="error" message={error} />}
+      {successMessage && <AlertMessage type="success" message={successMessage} />}
 
-      {/* 카테고리 탭 선택 */}
-      <CategoryTabSelector
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
-      />
-
-      {/* 하위 제품 그리드 */}
-      {selectedCategory && (
-        <ChildProductGrid
-          products={selectedCategory.children}
-          onSelectProduct={handleSelectProduct}
-          onAddNew={handleAddNewProduct}
+      <section className="w-full flex flex-col gap-[24px]">
+        <PageHeader
+          title={initialProductTitle || "제품 수정"}
+          subtitle="수정 페이지입니다"
+          titleColor="#004B73"
         />
-      )}
 
-      {/* 제품 상세 폼 (모달 또는 별도 섹션) */}
-      {showDetailForm && (
-        <div className="mt-8">
-          <ProductDetailForm
-            initialData={
-              selectedProduct
-                ? {
-                    slug: selectedProduct.slug,
-                    productName: selectedProduct.name,
-                    mainCategory: selectedCategory?.name || "",
-                    subCategory: selectedCategory?.nameKo || "",
-                    sourceUrl: selectedProduct.imageUrl,
-                    mainImageUrl: selectedProduct.imageUrl,
-                    pdfUrl: "",
-                  }
-                : {
-                    subCategory: selectedCategory?.nameKo || "",
-                  }
+        <div className="grid grid-cols-2 gap-[40px]">
+          <SingleImageSlot
+            imageUrl={formData.mainImageUrl}
+            onImageUpdate={(newImageUrl) =>
+              setFormData({ ...formData, mainImageUrl: newImageUrl })
             }
-            categoryName={selectedCategory?.nameKo || ""}
-            onSubmit={handleSubmitProduct}
-            onCancel={handleCancel}
+            altText={formData.productTitle}
+          />
+
+          <div className="flex flex-col gap-[20px]">
+            <FormInput
+              label="제품명 (영문)"
+              value={formData.productTitle}
+              onChange={(value) =>
+                setFormData({ ...formData, productTitle: value })
+              }
+              placeholder="Product Name"
+            />
+
+            <FormTextarea
+              label="제품 설명"
+              value={formData.description}
+              onChange={(value) =>
+                setFormData({ ...formData, description: value })
+              }
+              placeholder="Product Description"
+            />
+          </div>
+          <Switch
+            label="제품 노출"
+            checked={formData.isActive}
+            onChange={(checked) =>
+              setFormData({ ...formData, isActive: checked })
+            }
           />
         </div>
-      )}
+
+        <div className="flex justify-between items-center mt-[24px]">
+          <div className="flex gap-[12px]">
+            <SubmitButton onClick={handleSubmit} disabled={isSubmitDisabled}>
+              제품 수정 완료하기
+            </SubmitButton>
+            <button
+              onClick={() => router.back()}
+              className="px-[32px] py-[12px] bg-white border border-[#D4D4D4] text-[#404040] rounded-[8px] text-[14px] font-[600] hover:bg-[#F5F5F5]"
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
 
-export default function ProductEditPage() {
+export default function EditPage() {
   return (
     <Suspense
       fallback={
-        <div className="container mx-auto p-8">
-          <div className="text-center py-12">
-            <p className="text-gray-500">로딩 중...</p>
-          </div>
+        <div className="w-full h-screen flex items-center justify-center">
+          Loading...
         </div>
       }
     >
