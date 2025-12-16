@@ -10,6 +10,7 @@ interface ImageSlotProps {
   onImageUpload?: (image: MainImage) => void;
   onImageDelete?: (imageUrl: string) => void;
   onImageUpdate?: (oldUrl: string, newImage: MainImage) => void;
+  onRefresh?: () => Promise<void>; // 데이터 새로고침 콜백
 }
 
 const imageList = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }];
@@ -21,6 +22,7 @@ export default function ImageSlot({
   onImageUpload,
   onImageDelete,
   onImageUpdate,
+  onRefresh,
 }: ImageSlotProps) {
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -44,8 +46,14 @@ export default function ImageSlot({
 
       if (response.success && response.data) {
         const newImage = response.data;
-        setUploadedImages((prev) => [...prev, newImage]);
         onImageUpload?.(newImage);
+
+        // 최신 데이터 다시 불러오기
+        if (onRefresh) {
+          await onRefresh();
+        } else {
+          setUploadedImages((prev) => [...prev, newImage]);
+        }
       } else {
         setUploadError(response.message || "이미지 업로드에 실패했습니다.");
       }
@@ -92,10 +100,16 @@ export default function ImageSlot({
 
       if (response.success && response.data) {
         const newImage = response.data;
-        setUploadedImages((prev) =>
-          prev.map((img) => (img.url === oldImage.url ? newImage : img))
-        );
         onImageUpdate?.(oldImage.url, newImage);
+
+        // 최신 데이터 다시 불러오기
+        if (onRefresh) {
+          await onRefresh();
+        } else {
+          setUploadedImages((prev) =>
+            prev.map((img) => (img.url === oldImage.url ? newImage : img))
+          );
+        }
       } else {
         setUploadError(response.message || "이미지 수정에 실패했습니다.");
       }
@@ -118,10 +132,16 @@ export default function ImageSlot({
       const response = await homeSettingsAPI.deleteMainImage(image.url);
 
       if (response.success) {
-        setUploadedImages((prev) =>
-          prev.filter((img) => img.url !== image.url)
-        );
         onImageDelete?.(image.url);
+
+        // 최신 데이터 다시 불러오기
+        if (onRefresh) {
+          await onRefresh();
+        } else {
+          setUploadedImages((prev) =>
+            prev.filter((img) => img.url !== image.url)
+          );
+        }
       } else {
         setUploadError(response.message || "이미지 삭제에 실패했습니다.");
       }

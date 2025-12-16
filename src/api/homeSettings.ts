@@ -1,5 +1,6 @@
 import axiosInstance from "./axios";
 import { revalidateHomePage } from "@/utils/revalidation";
+import { v4 as uuidv4 } from "uuid";
 
 // 타입 정의
 export interface MainImage {
@@ -113,8 +114,20 @@ export const homeSettingsAPI = {
     altKo: string
   ): Promise<ApiResponse<MainImage>> => {
     try {
+      // 파일명을 UUID + 날짜 + 확장자로 변경
+      const fileExtension = file.name.substring(file.name.lastIndexOf('.'));
+      const timestamp = Date.now();
+      const uuid = uuidv4();
+      const newFileName = `${timestamp}-${uuid}${fileExtension}`;
+
+      // 새로운 파일명으로 File 객체 생성
+      const renamedFile = new File([file], newFileName, {
+        type: file.type,
+        lastModified: file.lastModified,
+      });
+
       // 1단계: 파일을 GCP에 업로드 (banner 폴더 사용)
-      const uploadResponse = await homeSettingsAPI.uploadFile(file, "banner");
+      const uploadResponse = await homeSettingsAPI.uploadFile(renamedFile, "banner");
 
       if (!uploadResponse.success || !uploadResponse.data) {
         throw new Error(
@@ -131,7 +144,7 @@ export const homeSettingsAPI = {
 
       const response = await axiosInstance.post<ApiResponse<MainImage>>(
         "/api/home-settings-admin/main-images",
-        imageData // ✅ 전체 객체를 전달 (url, alt, altKo)
+        imageData
       );
 
       // 이미지 업로드 성공 시 Kitagawa 사이트 홈 페이지 재생성

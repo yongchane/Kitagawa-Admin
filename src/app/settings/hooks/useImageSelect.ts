@@ -66,13 +66,13 @@ export const useImageSelect = () => {
     try {
       const response = await productsAPI.getLevel1Categories();
 
-      if (!response.success || !response.data) {
+      if (!response.success || !response.data || !response.data.items) {
         throw new Error(
           response.message || "카테고리 데이터를 불러올 수 없습니다."
         );
       }
 
-      const filteredCategories = response.data.filter(
+      const filteredCategories = response.data.items.filter(
         (category) => category.slug !== "catalogue"
       );
 
@@ -176,13 +176,20 @@ export const useImageSelect = () => {
           updatedProducts.map((p, i) => ({ slug: p.slug, order: i }))
         );
 
-        const updatePromises = updatedProducts.map((product, index) => {
-          console.log(`API call - slug: ${product.slug}, order: ${index}`);
-          return productsAPI.updateCategoryOrder(product.slug, index);
-        });
+        // Level 1 카테고리 일괄 순서 변경 API 사용
+        const items = updatedProducts.map((product, index) => ({
+          slug: product.slug,
+          order: index,
+        }));
 
-        const results = await Promise.all(updatePromises);
-        console.log("Update results:", results);
+        const response = await productsAPI.reorderLevel1Categories(items);
+        console.log("Reorder response:", response);
+
+        if (!response.success) {
+          throw new Error(
+            response.message || "카테고리 순서 변경에 실패했습니다."
+          );
+        }
 
         setError(null);
 
@@ -245,5 +252,7 @@ export const useImageSelect = () => {
     handleImageOrderUpdate,
     handleCategoryOrderUpdate,
     handleProductDelete,
+    loadMainImages, // 이미지 새로고침 함수 내보내기
+    loadCategories, // 카테고리 새로고침 함수 내보내기
   };
 };

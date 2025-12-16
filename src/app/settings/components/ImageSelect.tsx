@@ -20,6 +20,7 @@ export default function ImageSelect() {
     handleImageOrderUpdate,
     handleCategoryOrderUpdate,
     handleProductDelete,
+    loadMainImages,
   } = useImageSelect();
 
   // 페이지별 설정
@@ -34,6 +35,7 @@ export default function ImageSelect() {
               uploadedImages={uploadedImages}
               setUploadedImages={setUploadedImages}
               maxImages={5}
+              onRefresh={loadMainImages}
             />
           ),
           dragHint: "이미지 순서를 드래그 해서 설정해보세요",

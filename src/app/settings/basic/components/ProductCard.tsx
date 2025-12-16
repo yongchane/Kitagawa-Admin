@@ -70,7 +70,9 @@ export default function ProductCard({
           return (
             <div
               key={product.name}
-              onClick={() => handleProductClick(product.name, product.slug || product.name)}
+              onClick={() =>
+                handleProductClick(product.name, product.slug || product.name)
+              }
               className={`flex flex-col w-full border-[1px] rounded-[12px] p-[20px] cursor-pointer duration-300
                 ${
                   isSelected
@@ -159,7 +161,7 @@ export default function ProductCard({
 
         {/* 제품 추가 카드 */}
         <Link
-          href="/settings/products/setting?mode=create"
+          href="/settings/products/request"
           className="flex flex-col w-full border-[1px] border-dashed border-[#D4D4D4] bg-[#FAFAFA] rounded-[12px] p-[20px] cursor-pointer duration-300 hover:border-[#0089D1] hover:bg-[#E6F3FA] items-center justify-center min-h-[300px]"
         >
           <div className="flex flex-col items-center gap-[12px]">
