@@ -18,6 +18,7 @@ import FormTextarea from "../components/FormTextarea";
 import SubmitButton from "../components/SubmitButton";
 import AlertMessage from "../components/AlertMessage";
 import PageHeader from "../components/PageHeader";
+import RequestCard from "../components/ReeustCard";
 
 function ProductSettingContent() {
   const searchParams = useSearchParams();
@@ -355,7 +356,9 @@ function ProductSettingContent() {
   return (
     <div className="w-full flex flex-col gap-[40px] pretendard p-[40px]">
       {error && <AlertMessage type="error" message={error} />}
-      {successMessage && <AlertMessage type="success" message={successMessage} />}
+      {successMessage && (
+        <AlertMessage type="success" message={successMessage} />
+      )}
 
       <section className="w-full flex flex-col gap-[24px]">
         <PageHeader
@@ -528,6 +531,7 @@ function ProductSettingContent() {
                           </div>
                         );
                       })}
+                      <RequestCard />
                     </div>
                   )}
                 </div>

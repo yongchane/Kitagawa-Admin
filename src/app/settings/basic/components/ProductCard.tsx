@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import RequestCard from "../../products/components/ReeustCard";
 
 interface ProductCardProps {
   products: { name: string; content?: string; img: string; slug?: string }[];
@@ -155,7 +156,7 @@ export default function ProductCard({
         })}
 
         {/* 제품 추가 카드 */}
-        <div className="flex flex-col w-full border-[1px]  border-[#0089D1] bg-[#fff] rounded-[12px] p-[20px] cursor-pointer duration-300 hover:border-[#0089D1] hover:bg-[#E6F3FA] items-center justify-center min-h-[300px]">
+        {/* <div className="flex flex-col w-full border-[1px]  border-[#0089D1] bg-[#fff] rounded-[12px] p-[20px] cursor-pointer duration-300 hover:border-[#0089D1] hover:bg-[#E6F3FA] items-center justify-center min-h-[300px]">
           <div className="flex flex-col items-center gap-[12px]">
             <span className="text-[16px] font-[600] text-center text-[#404040] pretendard">
               새로운 제품이 출시 되었거나,
@@ -174,7 +175,8 @@ export default function ProductCard({
             {" "}
             Contact Here
           </Link>
-        </div>
+        </div> */}
+        <RequestCard />
       </div>
     </div>
   );
