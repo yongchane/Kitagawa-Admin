@@ -4,7 +4,7 @@ import ImageSelect from "../components/ImageSelect";
 
 export default function ProductsPage() {
   return (
-    <div>
+    <div className="p-[48px]">
       <AdminSettings
         title="메인 제품 설정"
         subtitle="최소 3개의 제품을 설정해주세요"
