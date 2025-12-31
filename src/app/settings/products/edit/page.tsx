@@ -158,7 +158,9 @@ function ProductEditContent() {
   return (
     <div className="w-full flex flex-col gap-[40px] pretendard p-[40px]">
       {error && <AlertMessage type="error" message={error} />}
-      {successMessage && <AlertMessage type="success" message={successMessage} />}
+      {successMessage && (
+        <AlertMessage type="success" message={successMessage} />
+      )}
 
       <section className="w-full flex flex-col gap-[24px]">
         <PageHeader
@@ -179,9 +181,9 @@ function ProductEditContent() {
           <div className="flex flex-col gap-[20px]">
             <FormInput
               label="제품명 (영문)"
-              value={formData.productTitle}
+              value={formData.productName}
               onChange={(value) =>
-                setFormData({ ...formData, productTitle: value })
+                setFormData({ ...formData, productName: value })
               }
               placeholder="Product Name"
             />

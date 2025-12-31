@@ -1,52 +1,64 @@
 "use client";
 import { useMemo, useState } from "react";
-import { infoAPI } from "@/api/info";
-// 메일 작성 관련 api 연동 필요
+import { infoAPI, DEFAULT_COMPANY_DATA } from "@/api/info";
+
 const formlist = [
   {
-    title: "E-mail",
+    title: "회사명",
     name: "companyName",
     type: "text",
-    placeholder: "기타가와 대표 이메일을 입력해주세요",
+    placeholder: "회사명을 입력해주세요",
     required: true,
   },
   {
     title: "CEO명",
-    name: "contactName",
+    name: "ceo",
     type: "text",
-    placeholder: "CEO명 작성해주세요",
+    placeholder: "CEO명을 입력해주세요",
     required: true,
   },
   {
-    title: "전화번호 (Tel)",
-    name: "phone",
+    title: "주소",
+    name: "address",
     type: "text",
-    placeholder: "'-' 없이 작성해주세요 (예: 01012345678)",
-    required: true,
-  },
-  {
-    title: "전화번호 (Mo)",
-    name: "phoneMobile",
-    type: "text",
-    placeholder: "'-' 없이 작성해주세요 (예: 01012345678)",
+    placeholder: "주소를 입력해주세요",
     required: false,
   },
-  // {
-  //   title: "사무실 위치",
-  //   name: "companyLocation",
-  //   type: "location",
-  //   placeholder: "도로명, 건물명 또는 지번으로 검색해주세요",
-  //   locationplaceholder: "상세 주소를 입력해주세요",
-  //   required: true,
-  // },
-  // {
-  //   title: "AS 센터 위치",
-  //   name: "companyASLocation",
-  //   type: "location",
-  //   placeholder: "도로명, 건물명 또는 지번으로 검색해주세요",
-  //   locationplaceholder: "상세 주소를 입력해주세요",
-  //   required: true,
-  // },
+  {
+    title: "전화번호",
+    name: "phone",
+    type: "text",
+    placeholder: "'-' 없이 입력해주세요 (예: 0220262222)",
+    required: true,
+  },
+  {
+    title: "휴대전화",
+    name: "mobile",
+    type: "text",
+    placeholder: "'-' 없이 입력해주세요 (예: 01036169973)",
+    required: false,
+  },
+  {
+    title: "팩스",
+    name: "fax",
+    type: "text",
+    placeholder: "'-' 없이 입력해주세요 (예: 0220262223)",
+    required: false,
+  },
+  {
+    title: "이메일",
+    name: "email",
+    type: "email",
+    placeholder: "이메일을 입력해주세요",
+    required: false,
+  },
+  {
+    title: "웹사이트",
+    name: "website",
+    type: "url",
+    placeholder: "웹사이트 URL을 입력해주세요 (예: https://www.kitagawa.co.kr)",
+    required: false,
+  },
 ];
 
 type Props = {
@@ -55,10 +67,17 @@ type Props = {
 };
 
 export default function CompanySetting({ agree, setAgree }: Props) {
-  // 상태: 각 입력값 저장 (간단한 required 체크용)
-  const [values, setValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(formlist.map((f) => [f.name, ""]))
-  );
+  // 상태: 각 입력값 저장 (기본값으로 초기화)
+  const [values, setValues] = useState<Record<string, string>>(() => ({
+    companyName: DEFAULT_COMPANY_DATA.companyName,
+    ceo: DEFAULT_COMPANY_DATA.ceo,
+    address: DEFAULT_COMPANY_DATA.address,
+    phone: DEFAULT_COMPANY_DATA.phone,
+    mobile: DEFAULT_COMPANY_DATA.mobile,
+    fax: DEFAULT_COMPANY_DATA.fax,
+    email: DEFAULT_COMPANY_DATA.email,
+    website: DEFAULT_COMPANY_DATA.website,
+  }));
 
   // 포커스/터치/제출 시도 상태
   const [focused, setFocused] = useState<string | null>(null);
@@ -76,20 +95,43 @@ export default function CompanySetting({ agree, setAgree }: Props) {
     setTouched((prev) => ({ ...prev, [name]: true }));
   };
 
-  // 필드별 에러 정의 (예: 전화번호 하이픈 금지, 이메일 형식)
+  // 필드별 에러 정의 (전화번호 하이픈 금지, 이메일/웹사이트 형식)
   const errors = useMemo(() => {
     const e: Record<string, string> = {};
+
+    // 전화번호 검증
     const phone = (values["phone"] || "").trim();
     if (phone && !/^[0-9]+$/.test(phone)) {
-      e["phone"] = "'-' 없이 입력해주세요";
+      e["phone"] = "'-' 없이 숫자만 입력해주세요";
     }
-    const email = (values["companyEmail"] || "").trim();
+
+    // 휴대전화 검증
+    const mobile = (values["mobile"] || "").trim();
+    if (mobile && !/^[0-9]+$/.test(mobile)) {
+      e["mobile"] = "'-' 없이 숫자만 입력해주세요";
+    }
+
+    // 팩스 검증
+    const fax = (values["fax"] || "").trim();
+    if (fax && !/^[0-9]+$/.test(fax)) {
+      e["fax"] = "'-' 없이 숫자만 입력해주세요";
+    }
+
+    // 이메일 검증
+    const email = (values["email"] || "").trim();
     if (
       email &&
       !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email)
     ) {
-      e["companyEmail"] = "올바른 이메일 형식을 입력해주세요";
+      e["email"] = "올바른 이메일 형식을 입력해주세요";
     }
+
+    // 웹사이트 검증
+    const website = (values["website"] || "").trim();
+    if (website && !/^https?:\/\/.+/.test(website)) {
+      e["website"] = "올바른 URL 형식을 입력해주세요 (http:// 또는 https://)";
+    }
+
     return e;
   }, [values]);
 
@@ -101,24 +143,27 @@ export default function CompanySetting({ agree, setAgree }: Props) {
     [values]
   );
 
-  const hasErrors = Object.keys(errors).length > 0;
-  const canSubmit = agree && requiredFilled && !hasErrors;
+  // const hasErrors = Object.keys(errors).length > 0;
+  // const canSubmit = agree && requiredFilled && !hasErrors;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitAttempted(true);
-    console.log("입력 정보 확인");
 
-    if (!canSubmit) {
-      return;
-    }
+    // if (!canSubmit) {
+    //   return;
+    // }
 
     try {
       const response = await infoAPI.submitInfoPatch({
         companyName: values["companyName"],
-        ceo: values["contactName"],
+        ceo: values["ceo"],
+        address: values["address"],
         phone: values["phone"],
-        mobile: values["phoneMobile"],
+        mobile: values["mobile"],
+        fax: values["fax"],
+        email: values["email"],
+        website: values["website"],
       });
 
       if (response.success) {
@@ -156,10 +201,6 @@ export default function CompanySetting({ agree, setAgree }: Props) {
           const fieldError = errors[name];
           const hasFieldError = !!fieldError || showRequiredError;
 
-          console.log(
-            '렌더링 확인: values["companyName"]:',
-            values["companyName"]
-          );
           return (
             <div key={name} className="w-full">
               <label className="pretendard text-[16px] font-[600] text-[#171717] mb-[8px] flex items-center">
@@ -187,12 +228,12 @@ export default function CompanySetting({ agree, setAgree }: Props) {
                 aria-required={!!item.required}
                 aria-invalid={hasFieldError}
                 inputMode={
-                  name === "phone" || name === "phoneMobile"
+                  name === "phone" || name === "mobile" || name === "fax"
                     ? "numeric"
                     : undefined
                 }
                 pattern={
-                  name === "phone" || name === "phoneMobile"
+                  name === "phone" || name === "mobile" || name === "fax"
                     ? "[0-9]*"
                     : undefined
                 }
@@ -236,7 +277,7 @@ export default function CompanySetting({ agree, setAgree }: Props) {
 
         <div className="col-span-2 mt-[80px] flex flex-col justify-center items-center">
           {/* 안내 문구: 비활성 시 노출 */}
-          {!canSubmit && (
+          {!requiredFilled && (
             <div className="flex items-center mb-[8px]">
               <img
                 src="/error.svg"
@@ -244,21 +285,23 @@ export default function CompanySetting({ agree, setAgree }: Props) {
                 className="inline-block mr-[4px]"
               />
               <div className="pretendard font-[600] text-[14px] text-[#FB2C36]">
-                필수항목을 전부 작성해 주시기 바랍니다.
+                {!requiredFilled
+                  ? "필수항목을 전부 작성해 주시기 바랍니다."
+                  : "입력 형식을 확인해 주시기 바랍니다."}
               </div>
             </div>
           )}
           <button
             type="submit"
-            disabled={!canSubmit}
+            disabled={!requiredFilled}
             onClick={() => setAgree(!agree)}
             className={`${
-              canSubmit
+              requiredFilled
                 ? "bg-[#0089D1] text-white hover:bg-[#007DBE] "
                 : "bg-[#EEE] text-[#D4D4D4] cursor-not-allowed"
             } w-[392px]  px-[16px] py-[8px] rounded-[9999px] transition-colors`}
           >
-            접수하기
+            수정하기
           </button>
         </div>
       </form>

@@ -70,7 +70,7 @@ export default function SingleImageSlot({
       )}
 
       <div
-        className="relative w-full h-[300px] bg-[#FAFAFA] border border-[#D4D4D4] rounded-[12px] flex items-center justify-center overflow-hidden group cursor-pointer"
+        className="relative w-full h-[300px] bg-[#fff] border border-[#D4D4D4] rounded-[12px] flex items-center justify-center overflow-hidden group cursor-pointer"
         onClick={() => {
           if (!isUploading) {
             fileInputRef.current?.click();

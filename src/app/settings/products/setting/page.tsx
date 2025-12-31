@@ -414,16 +414,16 @@ function ProductSettingContent() {
           </div>
         </div>
 
-        <div className="flex justify-between items-center mt-[24px]">
+        <div className="flex justify-center items-center mt-[24px]">
           <div className="flex gap-[12px]">
             <SubmitButton onClick={handleSubmit} disabled={isSubmitDisabled}>
-              {isCreateMode ? "카테고리 추가하기" : "카테고리 수정 완료하기"}
+              {isCreateMode ? "제품 추가하기" : "제품 수정 완료하기"}
             </SubmitButton>
-            {!isCreateMode && (
+            {/* {!isCreateMode && (
               <button className="px-[32px] py-[12px] bg-white border border-[#D4D4D4] text-[#404040] rounded-[8px] text-[14px] font-[600] hover:bg-[#F5F5F5]">
                 카테고리 삭제하기
               </button>
-            )}
+            )} */}
           </div>
         </div>
       </section>
@@ -491,7 +491,7 @@ function ProductSettingContent() {
                             className={`flex flex-col w-full border-[1px] rounded-[12px] p-[20px] cursor-pointer duration-300 ${
                               isSelected
                                 ? "border-[#0089D1] bg-[#E6F3FA]"
-                                : "border-[#D4D4D4] bg-[#FAFAFA] hover:border-[#0089D1] hover:bg-[#E6F3FA]"
+                                : "border-[#D4D4D4] bg-[#fff] hover:border-[#0089D1] "
                             }`}
                           >
                             <h4 className="text-[18px] font-[700] text-[#404040] mb-[12px]">
