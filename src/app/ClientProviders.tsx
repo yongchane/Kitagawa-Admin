@@ -9,7 +9,7 @@ export default function ClientProviders({
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider sessionTimeoutMinutes={2} warningTimeSeconds={60}>
+    <AuthProvider sessionTimeoutMinutes={60} warningTimeSeconds={300}>
       {children}
       <LogoutWarningModal />
     </AuthProvider>

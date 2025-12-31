@@ -1,5 +1,10 @@
 import RequestPageClient from "./component/RequestPageClient";
+import { SubmitProvider } from "@/contexts/ReaquestContext";
 
 export default function RequestPage() {
-  return <RequestPageClient />;
+  return (
+    <SubmitProvider>
+      <RequestPageClient />
+    </SubmitProvider>
+  );
 }

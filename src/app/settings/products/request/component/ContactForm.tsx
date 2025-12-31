@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { requestAPI } from "@/api/request";
+import SubmitSuccess from "./SubmitSuccess";
+import { useSubmit } from "@/contexts/ReaquestContext";
 
 interface FormData {
   productName: string;
@@ -19,9 +21,8 @@ export default function ContactForm() {
     url: "",
     requestDetails: "",
   });
+  const { submitSuccess, setSubmitSuccess } = useSubmit();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string>("");
-  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const inputList = [
     {
@@ -56,7 +57,6 @@ export default function ContactForm() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setSubmitError(""); // 입력 시 에러 메시지 초기화
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,12 +69,11 @@ export default function ContactForm() {
       !formData.url &&
       !formData.requestDetails
     ) {
-      setSubmitError("1개 이상의 항목을 작성해 주시기 바랍니다.");
+      alert("1개 이상의 항목을 작성해 주시기 바랍니다.");
       return;
     }
 
     setIsSubmitting(true);
-    setSubmitError("");
 
     try {
       const response = await requestAPI.submitProductRequest({
@@ -96,21 +95,19 @@ export default function ContactForm() {
         });
 
         // 2초 후 products 페이지로 리다이렉트
-        setTimeout(() => {
-          router.push("/settings/products");
-        }, 2000);
+        // setTimeout(() => {
+        //   router.push("/settings/products");
+        // }, 2000);
       } else {
-        setSubmitError(response.message || "문의 제출에 실패했습니다.");
+        alert(response.message || "문의 제출에 실패했습니다.");
       }
     } catch (error: any) {
       console.error("Submit error:", error);
-      setSubmitError(
+      alert(
         error.response?.data?.message ||
           error.message ||
           "문의 제출 중 오류가 발생했습니다."
       );
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -120,7 +117,37 @@ export default function ContactForm() {
     formData.url ||
     formData.requestDetails;
 
+  // 테스트를 위한 임시 함수 제출
+  // const handleTestSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setIsSubmitting(true);
+  //   console.log("Form submitted:", formData);
+  //   console.log("테스트 전송");
+  //   if (
+  //     !formData.productName &&
+  //     !formData.seriesName &&
+  //     !formData.url &&
+  //     !formData.requestDetails
+  //   ) {
+  //     alert("1개 이상의 항목을 작성해 주시기 바랍니다.");
+  //     return;
+  //   }
+  //   try {
+  //     setSubmitSuccess(true);
+  //     setFormData({
+  //       productName: "",
+  //       seriesName: "",
+  //       url: "",
+  //       requestDetails: "",
+  //     });
+  //   } catch (error) {
+  //     console.error("Submit error:", error);
+  //     alert("문의 제출 중 오류가 발생했습니다.");
+  //   }
+  // };
+
   return (
+    //테스트를 위한 onSubmit={handleSubmit} 제거
     <form onSubmit={handleSubmit} className="flex flex-col gap-[36px] ">
       <h2 className="w-full border-b-[1px] text-[#0089D1] text-[20px] font-[600] ">
         새로운 제품 추가시 다음 양식을 채워주세요
@@ -180,20 +207,20 @@ export default function ContactForm() {
       </div>
       <div></div>
       <div className="flex flex-col justify-end items-end gap-[13px] mt-[20px]">
-        {submitSuccess && (
-          <span className="text-[#0089D1] text-[14px] font-[600]">
-            문의가 성공적으로 제출되었습니다. 잠시 후 제품 페이지로 이동합니다...
-          </span>
-        )}
-        {submitError && (
-          <span className="text-[#FB2C36] text-[14px] font-[600]">
-            {submitError}
-          </span>
+        {!isFormValid && (
+          <div className="flex items-center justify-end text-[#FB2C36] text-[14px] font-[600]">
+            <img
+              src="/error.svg"
+              alt="error"
+              className="inline-block mr-[4px]"
+            />
+            <span>1개 이상의 항목을 작성해 주시기 바랍니다.</span>
+          </div>
         )}
         <button
           type="submit"
           disabled={!isFormValid || isSubmitting || submitSuccess}
-          className={`w-[272px] h-[40px] px-[16px] py-[8px] text-white rounded-[8px] ${
+          className={`w-[272px] h-[40px] px-[16px] py-[8px] text-white rounded-[9999px] ${
             isFormValid && !isSubmitting && !submitSuccess
               ? "bg-[#0089D1]"
               : "bg-[#EEEEEE]"

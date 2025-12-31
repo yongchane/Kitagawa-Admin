@@ -3,22 +3,27 @@
 import { useState } from "react";
 import ContactForm from "./ContactForm";
 import ConfirmModal from "./ConfirmModal";
+import { useSubmit } from "@/contexts/ReaquestContext";
+import SubmitSuccess from "./SubmitSuccess";
 
 export default function RequestPageClient() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const { submitSuccess } = useSubmit();
+  if (submitSuccess) {
+    return <SubmitSuccess />;
+  }
   return (
     <>
       <div className="pretendard w-full gap-[40px] flex flex-col gap-[40px]">
-        <header className="w-full flex flex-col items-center gap-[20px] font-semibold pt-[100px]">
-          <h1 className="text-[#004B73] font-[700] text-[40px]">
+        <header className="w-full flex flex-col items-center  pt-[100px]">
+          <h1 className="text-[#004B73] font-[700] text-[40px] pb-[12px]">
             Contact here
           </h1>
-          <span className="text-[#004B73] text-[20px]">
+          <span className="text-[#004B73] text-[20px] font-[600] pb-[20px]">
             새로운 제품이 출시 되었거나, 요청사항이 있으면 아래에 문의 사항을
             작성해주세요
           </span>
-          <div className="flex flex-row justify-start items-center w-full h-[58px] border-b-[1px] border-[E5E5E5]">
+          <div className="flex flex-row justify-start items-center w-full h-[58px] border-b-[1px] border-[#E5E5E5]">
             <button
               onClick={() => setIsModalOpen(true)}
               className="flex items-center"
@@ -29,7 +34,9 @@ export default function RequestPageClient() {
                 className="inline-block mr-[8px] p-[12px]"
               />
             </button>
-            <span>Admin page로 돌아가기</span>
+            <span className="text-[16px] text-[#404040] font-[500]">
+              Admin page로 돌아가기
+            </span>
           </div>
         </header>
         <main className="w-full p-[48px]">

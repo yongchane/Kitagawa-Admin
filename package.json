@@ -12,6 +12,7 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@lottiefiles/dotlottie-react": "^0.17.12",
     "axios": "^1.12.2",
     "next": "15.5.4",
     "react": "19.1.0",

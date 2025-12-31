@@ -5,7 +5,7 @@ export default function RequestCard() {
       <div className="flex flex-col items-center gap-[12px]">
         <span className="text-[16px] font-[600] text-center text-[#404040] pretendard">
           새로운 제품이 출시 되었거나,
-          <br /> 요청사항이 있으면 <br /> 아래로 문의주세요
+          <br /> 요청사항이 있으면 아래로 <br /> 문의부탁드립니다.
         </span>
       </div>
       <img
