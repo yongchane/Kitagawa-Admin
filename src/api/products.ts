@@ -234,6 +234,7 @@ export interface Level3ReorderItem {
 export interface ProductDetail {
   _id: string;
   slug: string;
+
   productName: string;
   productTitle?: string;
   category: {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
+import ClientProviders from "./ClientProviders";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -26,7 +27,7 @@ export default function RootLayout({
           fontFamily: "var(--font-poppins), Arial, Helvetica, sans-serif",
         }}
       >
-        {children}
+        <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
   );

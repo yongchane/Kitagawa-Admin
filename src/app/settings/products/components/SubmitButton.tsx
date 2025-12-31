@@ -13,7 +13,7 @@ export default function SubmitButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`px-[32px] py-[12px] rounded-[8px] text-[14px] font-[600] transition-colors ${
+      className={`w-[392px] px-[32px] py-[12px] rounded-[9999px] text-[14px] font-[600] transition-colors ${
         disabled
           ? "bg-gray-300 text-gray-500 cursor-not-allowed"
           : "bg-[#0089D1] text-white hover:bg-[#0077B8]"

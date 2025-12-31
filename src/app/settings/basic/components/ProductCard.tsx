@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import RequestCard from "../../products/components/ReeustCard";
 
 interface ProductCardProps {
   products: { name: string; content?: string; img: string; slug?: string }[];
@@ -73,13 +74,8 @@ export default function ProductCard({
               onClick={() =>
                 handleProductClick(product.name, product.slug || product.name)
               }
-              className={`flex flex-col w-full border-[1px] rounded-[12px] p-[20px] cursor-pointer duration-300
-                ${
-                  isSelected
-                    ? "border-[#0089D1] bg-[#E6F3FA]"
-                    : "border-[#D4D4D4] bg-[#FAFAFA] hover:border-[#0089D1] hover:bg-[#E6F3FA]"
-                }
-                ${!canAddMore && !isSelected && "opacity-50 cursor-not-allowed"}
+              className={`flex flex-col w-full border-[1px] rounded-[12px] p-[20px] cursor-pointer duration-300 border-[#D4D4D4] bg-[#Fff] hover:border-[#0089D1] 
+            
               `}
             >
               {/* 상단: 제목과 설명 */}
@@ -110,7 +106,7 @@ export default function ProductCard({
                     product.slug || product.name
                   )}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="text-[#0089D1] text-[14px] font-[600] pretendard hover:underline flex items-center gap-[4px]"
+                  className="text-[#0089D1] text-[14px]  font-[600] pretendard hover:underline flex items-center gap-[4px]"
                 >
                   제품 수정하기
                   <svg
@@ -131,7 +127,7 @@ export default function ProductCard({
                 </Link>
 
                 {/* 삭제 버튼 */}
-                {onDelete && product.slug && (
+                {/* {onDelete && product.slug && (
                   <button
                     onClick={(e) => handleDelete(e, product.slug!)}
                     className="text-[#DC2626] text-[14px] font-[600] pretendard hover:underline flex items-center gap-[4px]"
@@ -153,39 +149,13 @@ export default function ProductCard({
                     </svg>
                     삭제
                   </button>
-                )}
+                )} */}
               </div>
             </div>
           );
         })}
 
-        {/* 제품 추가 카드 */}
-        <Link
-          href="/settings/products/request"
-          className="flex flex-col w-full border-[1px] border-dashed border-[#D4D4D4] bg-[#FAFAFA] rounded-[12px] p-[20px] cursor-pointer duration-300 hover:border-[#0089D1] hover:bg-[#E6F3FA] items-center justify-center min-h-[300px]"
-        >
-          <div className="flex flex-col items-center gap-[12px]">
-            <div className="w-[64px] h-[64px] rounded-full bg-white border-2 border-[#D4D4D4] flex items-center justify-center">
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 32 32"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M16 8V24M8 16H24"
-                  stroke="#A3A3A3"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
-            <span className="text-[16px] font-[600] text-[#A3A3A3] pretendard">
-              제품 추가
-            </span>
-          </div>
-        </Link>
+        <RequestCard />
       </div>
     </div>
   );

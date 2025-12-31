@@ -15,9 +15,7 @@ export default function SettingsLayout({
         </header>
 
         {<NavMenu />}
-        <main className="settings-content w-full h-full p-[48px]">
-          {children}
-        </main>
+        <main className="settings-content w-full h-full ">{children}</main>
       </div>
     </AuthGuard>
   );
