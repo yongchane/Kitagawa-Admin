@@ -8,7 +8,7 @@ export interface UploadFileResponse {
   fileName: string;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   code: number;
   message: string;
@@ -67,15 +67,27 @@ export async function uploadFileToGCP(
     );
 
     return response.data;
-  } catch (error: any) {
+  } catch (error) {
     console.error("File upload error:", error);
+
+    // Axios 에러인지 확인
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as { response?: { status?: number; data?: { message?: string } }; message?: string };
+      return {
+        success: false,
+        code: axiosError.response?.status || 500,
+        message:
+          axiosError.response?.data?.message ||
+          axiosError.message ||
+          "파일 업로드 중 오류가 발생했습니다.",
+      };
+    }
+
+    // 일반 에러
     return {
       success: false,
-      code: error.response?.status || 500,
-      message:
-        error.response?.data?.message ||
-        error.message ||
-        "파일 업로드 중 오류가 발생했습니다.",
+      code: 500,
+      message: error instanceof Error ? error.message : "파일 업로드 중 오류가 발생했습니다.",
     };
   }
 }

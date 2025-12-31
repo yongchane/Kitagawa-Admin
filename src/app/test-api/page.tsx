@@ -4,11 +4,18 @@ import { useState } from "react";
 import { productsAPI } from "@/api/products";
 import { uploadFileToGCP } from "@/utils/fileUpload";
 
+interface TestResult {
+  name: string;
+  success: boolean;
+  data: unknown;
+  timestamp: string;
+}
+
 export default function TestAPIPage() {
-  const [testResults, setTestResults] = useState<any[]>([]);
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const addResult = (name: string, success: boolean, data: any) => {
+  const addResult = (name: string, success: boolean, data: unknown) => {
     setTestResults((prev) => [
       ...prev,
       {
@@ -28,8 +35,9 @@ export default function TestAPIPage() {
         "nc-rotary-table"
       );
       addResult("Level 2 카테고리 조회", response.success, response.data);
-    } catch (error: any) {
-      addResult("Level 2 카테고리 조회", false, error.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류";
+      addResult("Level 2 카테고리 조회", false, errorMessage);
     } finally {
       setLoading(false);
     }
@@ -41,8 +49,9 @@ export default function TestAPIPage() {
     try {
       const response = await uploadFileToGCP(file, "product");
       addResult("파일 업로드", response.success, response.data);
-    } catch (error: any) {
-      addResult("파일 업로드", false, error.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류";
+      addResult("파일 업로드", false, errorMessage);
     } finally {
       setLoading(false);
     }

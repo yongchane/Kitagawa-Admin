@@ -28,12 +28,19 @@ export default function LoginPage() {
       } else {
         setError(response.message || "로그인에 실패했습니다.");
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Login error:", err);
-      setError(
-        err.response?.data?.message ||
-          "로그인 중 오류가 발생했습니다. 아이디와 비밀번호를 확인해주세요."
-      );
+
+      // Axios 에러인지 확인
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosError = err as { response?: { data?: { message?: string } } };
+        setError(
+          axiosError.response?.data?.message ||
+            "로그인 중 오류가 발생했습니다. 아이디와 비밀번호를 확인해주세요."
+        );
+      } else {
+        setError("로그인 중 오류가 발생했습니다. 아이디와 비밀번호를 확인해주세요.");
+      }
     } finally {
       setIsLoading(false);
     }

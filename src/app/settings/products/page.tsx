@@ -1,7 +1,5 @@
 import AdminSettings from "../components/AdminSettings";
 
-import ImageSelect from "../components/ImageSelect";
-
 export default function ProductsPage() {
   return (
     <div className="p-[48px]">
