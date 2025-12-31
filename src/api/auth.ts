@@ -36,14 +36,17 @@ export const authAPI = {
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('tokenExpiry');
       localStorage.removeItem('admin');
     }
   },
 
-  // 토큰 저장
-  saveToken: (token: string, admin: Admin) => {
+  // 토큰 저장 (만료 시간 포함)
+  saveToken: (token: string, admin: Admin, expiresInMinutes: number = 60) => {
     if (typeof window !== 'undefined') {
+      const expiryTime = new Date().getTime() + expiresInMinutes * 60 * 1000;
       localStorage.setItem('accessToken', token);
+      localStorage.setItem('tokenExpiry', expiryTime.toString());
       localStorage.setItem('admin', JSON.stringify(admin));
     }
   },
@@ -65,8 +68,24 @@ export const authAPI = {
     return null;
   },
 
+  // 토큰 만료 시간 가져오기
+  getTokenExpiry: (): number | null => {
+    if (typeof window !== 'undefined') {
+      const expiry = localStorage.getItem('tokenExpiry');
+      return expiry ? parseInt(expiry, 10) : null;
+    }
+    return null;
+  },
+
+  // 토큰 만료 확인
+  isTokenExpired: (): boolean => {
+    const expiry = authAPI.getTokenExpiry();
+    if (!expiry) return true;
+    return new Date().getTime() > expiry;
+  },
+
   // 인증 확인
   isAuthenticated: (): boolean => {
-    return !!authAPI.getToken();
+    return !!authAPI.getToken() && !authAPI.isTokenExpired();
   },
 };

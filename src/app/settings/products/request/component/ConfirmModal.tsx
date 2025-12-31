@@ -19,29 +19,29 @@ export default function ConfirmModal({ isOpen, onClose }: ConfirmModalProps) {
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-[16px] p-[40px] max-w-[520px] w-full mx-[20px] relative">
+      <div className="bg-white rounded-[16px] p-[40px] max-w-[720px] w-full mx-[20px] relative">
         {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-[20px] right-[20px] w-[24px] h-[24px] flex items-center justify-center"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        <div className=" w-full h-[auto] flex items-center justify-end pb-[48px]">
+          <button
+            onClick={onClose}
+            className=" w-[24px] h-[24px] flex items-center justify-center"
           >
-            <circle cx="12" cy="12" r="10" fill="#2B7FFF" />
-            <path
-              d="M8 8L16 16M16 8L8 16"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
-
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 8L16 16M16 8L8 16"
+                stroke="#2B7FFF"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        </div>
         {/* Modal content */}
         <div className="flex flex-col items-center text-center">
           <h2 className="text-[20px] font-semibold text-[#171717] mb-[24px]">
@@ -57,34 +57,24 @@ export default function ConfirmModal({ isOpen, onClose }: ConfirmModalProps) {
 
           {/* Arrow icon */}
           <div className="mb-[40px]">
-            <svg
-              width="40"
-              height="24"
-              viewBox="0 0 40 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M20 0L20 18M20 18L12 10M20 18L28 10"
-                stroke="#2B7FFF"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <img
+              src="/new.svg"
+              alt="Arrow Icon"
+              className="w-[auto] h-[auto]"
+            />
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-[16px] w-full">
+          <div className="flex gap-[16px] w-full justify-center">
             <button
               onClick={handleConfirm}
-              className="flex-1 bg-[#2B7FFF] text-white rounded-[100px] py-[12px] px-[24px] text-[16px] font-semibold hover:bg-[#1a6fe6] transition-colors"
+              className="w-[155px] bg-[#0089D1] text-white rounded-[9999px] py-[8px] px-[20px] text-[16px] font-semibold hover:bg-[#1a6fe6] transition-colors"
             >
               삭제하고 돌아가기
             </button>
             <button
               onClick={onClose}
-              className="flex-1 bg-white border-[2px] border-[#2B7FFF] text-[#2B7FFF] rounded-[100px] py-[12px] px-[24px] text-[16px] font-semibold hover:bg-[#f0f7ff] transition-colors"
+              className="w-[155px] bg-white border-[1px] border-[#0089D1] text-[#0089D1] rounded-[9999px] py-[8px] px-[20px] text-[16px] font-semibold hover:bg-[#f0f7ff] transition-colors"
             >
               닫기
             </button>

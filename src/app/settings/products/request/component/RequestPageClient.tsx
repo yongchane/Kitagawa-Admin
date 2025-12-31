@@ -11,8 +11,10 @@ export default function RequestPageClient() {
     <>
       <div className="pretendard w-full gap-[40px] flex flex-col gap-[40px]">
         <header className="w-full flex flex-col items-center gap-[20px] font-semibold pt-[100px]">
-          <h1 className="text-[#171717] text-[24px]">Contact here</h1>
-          <span className="text-[#2B7FFF] text-[16px]">
+          <h1 className="text-[#004B73] font-[700] text-[40px]">
+            Contact here
+          </h1>
+          <span className="text-[#004B73] text-[20px]">
             새로운 제품이 출시 되었거나, 요청사항이 있으면 아래에 문의 사항을
             작성해주세요
           </span>
