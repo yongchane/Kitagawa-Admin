@@ -9,9 +9,12 @@ import SubmitSuccess from "./SubmitSuccess";
 export default function RequestPageClient() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { submitSuccess } = useSubmit();
+
+  // 제출 성공 시 성공 로띠 컴포넌트 렌더링
   if (submitSuccess) {
     return <SubmitSuccess />;
   }
+
   return (
     <>
       <div className="pretendard w-full gap-[40px] flex flex-col gap-[40px]">

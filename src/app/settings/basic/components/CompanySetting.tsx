@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-
+import { infoAPI } from "@/api/info";
 // 메일 작성 관련 api 연동 필요
 const formlist = [
   {
@@ -11,10 +11,10 @@ const formlist = [
     required: true,
   },
   {
-    title: "담당자명",
+    title: "CEO명",
     name: "contactName",
     type: "text",
-    placeholder: "담당자명 작성해주세요",
+    placeholder: "CEO명 작성해주세요",
     required: true,
   },
   {
@@ -31,22 +31,22 @@ const formlist = [
     placeholder: "'-' 없이 작성해주세요 (예: 01012345678)",
     required: false,
   },
-  {
-    title: "사무실 위치",
-    name: "companyLocation",
-    type: "location",
-    placeholder: "도로명, 건물명 또는 지번으로 검색해주세요",
-    locationplaceholder: "상세 주소를 입력해주세요",
-    required: true,
-  },
-  {
-    title: "AS 센터 위치",
-    name: "companyASLocation",
-    type: "location",
-    placeholder: "도로명, 건물명 또는 지번으로 검색해주세요",
-    locationplaceholder: "상세 주소를 입력해주세요",
-    required: true,
-  },
+  // {
+  //   title: "사무실 위치",
+  //   name: "companyLocation",
+  //   type: "location",
+  //   placeholder: "도로명, 건물명 또는 지번으로 검색해주세요",
+  //   locationplaceholder: "상세 주소를 입력해주세요",
+  //   required: true,
+  // },
+  // {
+  //   title: "AS 센터 위치",
+  //   name: "companyASLocation",
+  //   type: "location",
+  //   placeholder: "도로명, 건물명 또는 지번으로 검색해주세요",
+  //   locationplaceholder: "상세 주소를 입력해주세요",
+  //   required: true,
+  // },
 ];
 
 type Props = {
@@ -104,13 +104,32 @@ export default function CompanySetting({ agree, setAgree }: Props) {
   const hasErrors = Object.keys(errors).length > 0;
   const canSubmit = agree && requiredFilled && !hasErrors;
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setSubmitAttempted(true);
+    console.log("입력 정보 확인");
+
     if (!canSubmit) {
-      e.preventDefault();
       return;
     }
-    // TODO: 실제 전송 로직 연결
+
+    try {
+      const response = await infoAPI.submitInfoPatch({
+        companyName: values["companyName"],
+        ceo: values["contactName"],
+        phone: values["phone"],
+        mobile: values["phoneMobile"],
+      });
+
+      if (response.success) {
+        alert(response.message || "기본 정보가 성공적으로 저장되었습니다.");
+      } else {
+        alert(response.message || "기본 정보 저장에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("Submit error:", error);
+      alert("기본 정보 저장 중 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -137,6 +156,10 @@ export default function CompanySetting({ agree, setAgree }: Props) {
           const fieldError = errors[name];
           const hasFieldError = !!fieldError || showRequiredError;
 
+          console.log(
+            '렌더링 확인: values["companyName"]:',
+            values["companyName"]
+          );
           return (
             <div key={name} className="w-full">
               <label className="pretendard text-[16px] font-[600] text-[#171717] mb-[8px] flex items-center">
@@ -181,6 +204,8 @@ export default function CompanySetting({ agree, setAgree }: Props) {
                     : "border-[1px] border-[#D4D4D4]"
                 }`}
               />
+
+              {/* 사무실 및 AS 센터 위치 입력란 (추후 구현 시 사용)
               {item.locationplaceholder && (
                 <input
                   placeholder={item.locationplaceholder}
@@ -192,7 +217,7 @@ export default function CompanySetting({ agree, setAgree }: Props) {
                       : "border-[1px] border-[#D4D4D4]"
                   }`}
                 />
-              )}
+              )} */}
               {/* 도움말/에러 메시지 */}
               {fieldError && (
                 <div className="mt-[6px] text-right pretendard text-[12px] text-[#FB2C36]">
