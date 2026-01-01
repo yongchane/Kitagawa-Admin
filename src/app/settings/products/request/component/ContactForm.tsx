@@ -3,13 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { requestAPI } from "@/api/request";
-import SubmitSuccess from "./SubmitSuccess";
 import { useSubmit } from "@/contexts/ReaquestContext";
 
 interface FormData {
   productName: string;
   seriesName: string;
-  url: string;
+  url?: string;
   requestDetails: string;
 }
 
@@ -79,7 +78,7 @@ export default function ContactForm() {
       const response = await requestAPI.submitProductRequest({
         productName: formData.productName,
         seriesName: formData.seriesName,
-        url: formData.url,
+        url: formData.url || undefined,
         requestDetails: formData.requestDetails,
         autoImport: !!formData.url, // URL이 있으면 자동 크롤링 활성화
       });
@@ -108,6 +107,8 @@ export default function ContactForm() {
           error.message ||
           "문의 제출 중 오류가 발생했습니다."
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
