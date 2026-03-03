@@ -23,7 +23,7 @@ export default function FormTextarea({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         style={{ height }}
-        className="w-full px-[16px] py-[12px] border border-[#D4D4D4] rounded-[8px] text-[14px] focus:outline-none focus:border-[#0089D1] resize-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+        className="w-full px-[16px] py-[12px] border border-[#D4D4D4] rounded-[8px] text-[14px] text-[#171717] bg-white focus:outline-none focus:border-[#0089D1] resize-none disabled:bg-gray-100 disabled:cursor-not-allowed placeholder:text-[#A3A3A3]"
         placeholder={placeholder}
       />
     </div>

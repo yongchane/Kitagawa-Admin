@@ -17,6 +17,8 @@ function ProductEditContent() {
   const slug = searchParams?.get("slug");
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -90,6 +92,34 @@ function ProductEditContent() {
 
     loadProductData();
   }, [slug]);
+
+  const handleDelete = async () => {
+    if (!slug) return;
+
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      const response = await productsAPI.deleteProduct(slug);
+
+      if (response.success) {
+        setSuccessMessage("제품이 삭제되었습니다.");
+        setTimeout(() => {
+          router.back();
+        }, 1500);
+      } else {
+        setError(response.message || "제품 삭제에 실패했습니다.");
+      }
+    } catch (err: any) {
+      console.error("Delete error:", err);
+      setError(
+        err.response?.data?.message || "제품 삭제 중 오류가 발생했습니다."
+      );
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
 
   const handleSubmit = async () => {
     setError(null);
@@ -218,7 +248,43 @@ function ProductEditContent() {
               취소
             </button>
           </div>
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="px-[32px] py-[12px] bg-white border border-red-300 text-red-500 rounded-[8px] text-[14px] font-[600] hover:bg-red-50"
+          >
+            제품 삭제
+          </button>
         </div>
+
+        {/* 삭제 확인 모달 */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-[12px] p-[32px] max-w-[400px] w-full mx-[16px]">
+              <h3 className="text-[18px] font-[700] text-[#404040] mb-[12px]">
+                제품 삭제
+              </h3>
+              <p className="text-[14px] text-[#737373] mb-[24px]">
+                &quot;{initialProductTitle}&quot; 제품을 삭제하시겠습니까?
+                <br />이 작업은 되돌릴 수 없습니다.
+              </p>
+              <div className="flex gap-[12px] justify-end">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-[24px] py-[10px] bg-white border border-[#D4D4D4] text-[#404040] rounded-[8px] text-[14px] font-[600] hover:bg-[#F5F5F5]"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="px-[24px] py-[10px] bg-red-500 text-white rounded-[8px] text-[14px] font-[600] hover:bg-red-600 disabled:bg-red-300"
+                >
+                  {isDeleting ? "삭제 중..." : "삭제"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

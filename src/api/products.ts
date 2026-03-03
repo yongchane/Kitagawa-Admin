@@ -82,6 +82,9 @@ export interface ProductCreateRequest {
   sourceUrl?: string;
   imageUrls?: string[];
   mainImageUrl?: string;
+  description?: string;
+  content?: string;
+  contentDetail?: string;
   specificationHtml?: string;
   downloads?: ProductDownload[];
   additionalInfo?: ProductAdditionalInfo;
@@ -307,9 +310,16 @@ export const productsAPI = {
   createProduct: async (
     productData: ProductCreateRequest
   ): Promise<ApiResponse> => {
+    // 백엔드 필드명 매핑: productNameKo → productTitle, youtubeUrl string → string[]
+    const { productNameKo, youtubeUrl, ...rest } = productData;
+    const backendData: any = {
+      ...rest,
+      ...(productNameKo && { productTitle: productNameKo }),
+      ...(youtubeUrl && { youtubeUrl: [youtubeUrl] }),
+    };
     const response = await axiosInstance.post<ApiResponse>(
       "/api/product-admin",
-      productData
+      backendData
     );
 
     // 제품 생성 성공 시 Kitagawa 사이트 카테고리 페이지 재생성

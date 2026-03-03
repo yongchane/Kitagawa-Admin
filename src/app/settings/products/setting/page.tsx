@@ -78,6 +78,12 @@ function ProductSettingContent() {
     null
   );
 
+  // 삭제 관련 상태
+  const [deletingSlug, setDeletingSlug] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
+    null
+  );
+
   // Level 1 카테고리 데이터 로드 (수정 모드일 때)
   useEffect(() => {
     const loadCategoryData = async () => {
@@ -188,6 +194,42 @@ function ProductSettingContent() {
 
     loadLevel3Products();
   }, [selectedTab]);
+
+  // 제품 삭제 핸들러
+  const handleDeleteProduct = async (productSlug: string) => {
+    setDeletingSlug(productSlug);
+    setError(null);
+
+    try {
+      const response = await productsAPI.deleteProduct(productSlug);
+
+      if (response.success) {
+        setSuccessMessage("제품이 삭제되었습니다.");
+        // 목록 새로고침
+        if (selectedTab) {
+          const refreshResponse =
+            await productsAPI.getLevel3Products(selectedTab);
+          if (refreshResponse.success && refreshResponse.data?.items) {
+            const sortedProducts = refreshResponse.data.items.sort(
+              (a, b) => a.orderInLevel2 - b.orderInLevel2
+            );
+            setLevel3Products(sortedProducts);
+            setLevel3ProductsForDnd(sortedProducts);
+          }
+        }
+      } else {
+        setError(response.message || "제품 삭제에 실패했습니다.");
+      }
+    } catch (err: any) {
+      console.error("Delete error:", err);
+      setError(
+        err.response?.data?.message || "제품 삭제 중 오류가 발생했습니다."
+      );
+    } finally {
+      setDeletingSlug(null);
+      setShowDeleteConfirm(null);
+    }
+  };
 
   const handleSubProductClick = (productName: string) => {
     if (selectedSubProducts.includes(productName)) {
@@ -507,30 +549,66 @@ function ProductSettingContent() {
                                 className="w-full h-[140px] object-contain"
                               />
                             </div>
-                            <Link
-                              href={`/settings/products/edit?slug=${product.slug}`}
-                              onClick={(e) => e.stopPropagation()}
-                              className="self-end text-[#0089D1] text-[14px] font-[600] hover:underline flex items-center gap-[4px]"
-                            >
-                              제품 수정하기
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 16 16"
-                                fill="none"
+                            <div className="flex justify-between items-center w-full">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowDeleteConfirm(product.slug);
+                                }}
+                                className="text-red-400 text-[13px] font-[500] hover:text-red-600"
                               >
-                                <path
-                                  d="M6 12L10 8L6 4"
-                                  stroke="#0089D1"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                            </Link>
+                                삭제
+                              </button>
+                              <Link
+                                href={`/settings/products/edit?slug=${product.slug}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-[#0089D1] text-[14px] font-[600] hover:underline flex items-center gap-[4px]"
+                              >
+                                제품 수정하기
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 16 16"
+                                  fill="none"
+                                >
+                                  <path
+                                    d="M6 12L10 8L6 4"
+                                    stroke="#0089D1"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                              </Link>
+                            </div>
                           </div>
                         );
                       })}
+                      {/* 제품 직접 등록 카드 */}
+                      <div className="flex flex-col w-full border-[1px] border-dashed border-[#0089D1] bg-[#fff] rounded-[12px] p-[20px] cursor-pointer duration-300 hover:bg-[#E6F3FA] items-center justify-center min-h-[300px]">
+                        <div className="flex flex-col items-center gap-[12px]">
+                          <svg
+                            width="40"
+                            height="40"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#0089D1"
+                            strokeWidth="2"
+                          >
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                          </svg>
+                          <span className="text-[14px] font-[600] text-[#404040]">
+                            제품 직접 등록
+                          </span>
+                        </div>
+                        <Link
+                          href="/settings/products/create"
+                          className="mt-[16px] w-[139px] h-[40px] bg-[#0089D1] rounded-[9999px] text-white justify-center flex items-center font-[600] text-[14px]"
+                        >
+                          등록하기
+                        </Link>
+                      </div>
                       <RequestCard />
                     </div>
                   )}
@@ -559,6 +637,36 @@ function ProductSettingContent() {
             </div>
           </section>
         </>
+      )}
+
+      {/* 삭제 확인 모달 */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-[12px] p-[32px] max-w-[400px] w-full mx-[16px]">
+            <h3 className="text-[18px] font-[700] text-[#404040] mb-[12px]">
+              제품 삭제
+            </h3>
+            <p className="text-[14px] text-[#737373] mb-[24px]">
+              이 제품을 삭제하시겠습니까?
+              <br />이 작업은 되돌릴 수 없습니다.
+            </p>
+            <div className="flex gap-[12px] justify-end">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="px-[24px] py-[10px] bg-white border border-[#D4D4D4] text-[#404040] rounded-[8px] text-[14px] font-[600] hover:bg-[#F5F5F5]"
+              >
+                취소
+              </button>
+              <button
+                onClick={() => handleDeleteProduct(showDeleteConfirm)}
+                disabled={!!deletingSlug}
+                className="px-[24px] py-[10px] bg-red-500 text-white rounded-[8px] text-[14px] font-[600] hover:bg-red-600 disabled:bg-red-300"
+              >
+                {deletingSlug ? "삭제 중..." : "삭제"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

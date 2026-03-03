@@ -88,4 +88,60 @@ export const authAPI = {
   isAuthenticated: (): boolean => {
     return !!authAPI.getToken() && !authAPI.isTokenExpired();
   },
+
+  // 비밀번호 변경
+  changePassword: async (
+    currentPassword: string,
+    newPassword: string
+  ): Promise<{ success: boolean; code: number; message: string }> => {
+    const response = await axiosInstance.patch(
+      '/api/auth-admin/change-password',
+      { currentPassword, newPassword }
+    );
+    return response.data;
+  },
+
+  // 아이디 변경
+  changeUsername: async (
+    newUsername: string
+  ): Promise<{ success: boolean; code: number; message: string }> => {
+    const response = await axiosInstance.patch(
+      '/api/auth-admin/change-username',
+      { newUsername }
+    );
+    return response.data;
+  },
+
+  // 관리자 등록
+  register: async (
+    username: string,
+    password: string,
+    name: string
+  ): Promise<{ success: boolean; code: number; message: string; data?: any }> => {
+    const response = await axiosInstance.post('/api/auth-admin/register', {
+      username,
+      password,
+      name,
+    });
+    return response.data;
+  },
+
+  // 모든 관리자 조회
+  getAllAdmins: async (): Promise<{
+    success: boolean;
+    code: number;
+    message: string;
+    data: Admin[];
+  }> => {
+    const response = await axiosInstance.get('/api/auth-admin/all');
+    return response.data;
+  },
+
+  // 관리자 삭제
+  deleteAdmin: async (
+    adminId: string
+  ): Promise<{ success: boolean; code: number; message: string }> => {
+    const response = await axiosInstance.delete(`/api/auth-admin/${adminId}`);
+    return response.data;
+  },
 };
